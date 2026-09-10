@@ -9,8 +9,7 @@ import {
   Calendar,
   WalletCards,
   Plus,
-  ArrowRightLeft,
-  X
+  ArrowRightLeft
 } from 'lucide-react';
 import {
   BarChart,
@@ -26,6 +25,8 @@ import {
 } from 'recharts';
 import { Income, Expense, UserProfile, Transaction, Wallet, Transfer, getWalletLabel } from '../types';
 import { getWalletIcon } from './WalletManager';
+import { calculateWalletBalances } from '../utils/finance';
+import TransferModal from './TransferModal';
 
 type TimeFrame = 'this_month' | 'last_month' | 'this_year' | 'all' | 'custom';
 
@@ -59,11 +60,7 @@ export default function Dashboard({
 
   // Quick Transfer Modal State
   const [isOpenTransferModal, setIsOpenTransferModal] = useState(false);
-  const [transferFrom, setTransferFrom] = useState('');
-  const [transferTo, setTransferTo] = useState('');
-  const [transferAmount, setTransferAmount] = useState('');
-  const [transferDate, setTransferDate] = useState(new Date().toISOString().substring(0, 10));
-  const [isTransferring, setIsTransferring] = useState(false);
+  const [selectedFromWalletId, setSelectedFromWalletId] = useState<string | undefined>(undefined);
 
   // 1. Calculate effective date range based on selected timeFrame
   const dateRange = useMemo(() => {
@@ -123,85 +120,13 @@ export default function Dashboard({
   }, [incomes, expenses, dateRange]);
 
   // 3. Calculate live balances for all wallets
-  const defaultWallet = useMemo(() => wallets[0], [wallets]);
-
-  const getWalletNameById = (id: string) => {
-    const found = wallets.find((w) => w.id === id);
-    if (!found) return 'အမည်မသိ';
-    return getWalletLabel(found.type, found.name);
-  };
-
   const walletBalances = useMemo(() => {
-    if (!wallets || wallets.length === 0) return [];
-    return wallets.map((w) => {
-      const isDefaultW = defaultWallet?.id === w.id;
-      const wIncomes = incomes.filter((i) => i.walletId === w.id || (isDefaultW && !i.walletId));
-      const wExpenses = expenses.filter((e) => e.walletId === w.id || (isDefaultW && !e.walletId));
-      const wTransfersOut = transfers.filter((t) => t.fromWalletId === w.id);
-      const wTransfersIn = transfers.filter((t) => t.toWalletId === w.id);
-
-      const incSum = wIncomes.reduce((s, i) => s + i.amount, 0);
-      const expSum = wExpenses.reduce((s, e) => s + e.amount, 0);
-      const outSum = wTransfersOut.reduce((s, t) => s + t.amount, 0);
-      const inSum = wTransfersIn.reduce((s, t) => s + t.amount, 0);
-
-      const currentBalance = (w.initialBalance || 0) + incSum - expSum - outSum + inSum;
-      return {
-        ...w,
-        displayName: getWalletLabel(w.type, w.name),
-        currentBalance
-      };
-    });
-  }, [wallets, incomes, expenses, transfers, defaultWallet]);
+    return calculateWalletBalances(wallets, incomes, expenses, transfers);
+  }, [wallets, incomes, expenses, transfers]);
 
   const openTransferModal = (defaultFromId?: string) => {
-    const from = defaultFromId || wallets[0]?.id || '';
-    const to = wallets.find((w) => w.id !== from)?.id || '';
-    setTransferFrom(from);
-    setTransferTo(to);
-    setTransferAmount('');
-    setTransferDate(new Date().toISOString().substring(0, 10));
+    setSelectedFromWalletId(defaultFromId);
     setIsOpenTransferModal(true);
-  };
-
-  const handleTransferSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!onAddTransfer) return;
-
-    if (!transferFrom || !transferTo) {
-      onShowToast?.('ငွေလွှဲမည့် အကောင့်များကို ရွေးချယ်ပေးပါ။', 'error');
-      return;
-    }
-    if (transferFrom === transferTo) {
-      onShowToast?.('ငွေလွှဲမည့် အကောင့်နှင့် လက်ခံမည့် အကောင့် မတူညီရပါ။', 'error');
-      return;
-    }
-    const parsedAmount = parseFloat(transferAmount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      onShowToast?.('ငွေလွှဲပမာဏသည် သုညထက် ကြီးရပါမည်။', 'error');
-      return;
-    }
-    if (!transferDate) {
-      onShowToast?.('ရက်စွဲ ရွေးချယ်ပေးပါ။', 'error');
-      return;
-    }
-
-    setIsTransferring(true);
-    try {
-      await onAddTransfer({
-        fromWalletId: transferFrom,
-        toWalletId: transferTo,
-        amount: parsedAmount,
-        date: transferDate,
-      });
-      onShowToast?.('ငွေလွှဲပြောင်းမှု အောင်မြင်ပါသည်ခင်ဗျာ။', 'success');
-      setIsOpenTransferModal(false);
-    } catch (err) {
-      console.error(err);
-      onShowToast?.('ငွေလွှဲမှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။', 'error');
-    } finally {
-      setIsTransferring(false);
-    }
   };
 
   // 4. Total Net Worth / Assets across all wallets
@@ -630,122 +555,15 @@ export default function Dashboard({
       </div>
 
       {/* Quick Transfer Modal */}
-      {isOpenTransferModal && (
-        <div
-          id="modal-dashboard-transfer"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
-        >
-          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
-                  <ArrowRightLeft className="w-4 h-4" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900">
-                  ပိုက်ဆံအိတ် အချင်းချင်း ငွေလွှဲမည်
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsOpenTransferModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleTransferSubmit} className="p-5 space-y-4">
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                  ငွေလွှဲမည့် အကောင့် (From) *
-                </label>
-                <select
-                  value={transferFrom}
-                  onChange={(e) => {
-                    setTransferFrom(e.target.value);
-                    if (e.target.value === transferTo) {
-                      const other = wallets.find((w) => w.id !== e.target.value);
-                      if (other) setTransferTo(other.id);
-                    }
-                  }}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white cursor-pointer"
-                >
-                  {wallets.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {getWalletNameById(w.id)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                  လက်ခံမည့် အကောင့် (To) *
-                </label>
-                <select
-                  value={transferTo}
-                  onChange={(e) => setTransferTo(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white cursor-pointer"
-                >
-                  {wallets
-                    .filter((w) => w.id !== transferFrom)
-                    .map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {getWalletNameById(w.id)}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                  ငွေလွှဲပမာဏ ({currencySymbol.trim()}) *
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  min="0.01"
-                  required
-                  placeholder="0.00"
-                  value={transferAmount}
-                  onChange={(e) => setTransferAmount(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                  ရက်စွဲ *
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={transferDate}
-                  onChange={(e) => setTransferDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white cursor-pointer"
-                />
-              </div>
-
-              <div className="flex gap-3 justify-end pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsOpenTransferModal(false)}
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  မလုပ်တော့ပါ
-                </button>
-                <button
-                  type="submit"
-                  disabled={isTransferring}
-                  className="px-5 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
-                >
-                  <ArrowRightLeft className="w-4 h-4" />
-                  {isTransferring ? 'လွှဲပြောင်းနေသည်...' : 'ငွေလွှဲမည်'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <TransferModal
+        isOpen={isOpenTransferModal}
+        onClose={() => setIsOpenTransferModal(false)}
+        wallets={wallets}
+        defaultFromWalletId={selectedFromWalletId}
+        currencySymbol={currencySymbol}
+        onAddTransfer={onAddTransfer}
+        onShowToast={onShowToast || (() => {})}
+      />
     </div>
   );
 }

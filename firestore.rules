@@ -1,11 +1,78 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if the user is authenticated and owns the document
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      match /{document=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() <= 100;
+      allow delete: if false;
+
+      // Categories collection
+      match /categories/{catId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 50
+          && request.resource.data.type in ['income', 'expense'];
+        allow delete: if isOwner(userId);
+      }
+
+      // Wallets collection (5 supported types, non-negative initial balance)
+      match /wallets/{walletId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.type in ['kbz_pay', 'wave_pay', 'cb_pay', 'mab_bank', 'yoma_bank']
+          && request.resource.data.initialBalance is number
+          && request.resource.data.initialBalance >= 0;
+        allow delete: if isOwner(userId);
+      }
+
+      // Incomes collection
+      match /incomes/{incomeId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 100
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.category is string
+          && request.resource.data.date is string;
+        allow delete: if isOwner(userId);
+      }
+
+      // Expenses collection
+      match /expenses/{expenseId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 100
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.category is string
+          && request.resource.data.date is string;
+        allow delete: if isOwner(userId);
+      }
+
+      // Transfers collection (different wallets, positive amount)
+      match /transfers/{transferId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.fromWalletId is string
+          && request.resource.data.toWalletId is string
+          && request.resource.data.fromWalletId != request.resource.data.toWalletId
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.date is string;
+        allow delete: if isOwner(userId);
       }
     }
   }

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   ArrowUpRight,
@@ -10,6 +10,7 @@ import {
   ArrowDown
 } from 'lucide-react';
 import { Income, Expense, Category, UserProfile, Transaction, Wallet, getWalletLabel } from '../types';
+import Pagination from './Pagination';
 
 type TxSortField = 'type' | 'title' | 'category' | 'wallet' | 'date' | 'amount';
 type SortOrder = 'asc' | 'desc';
@@ -38,6 +39,10 @@ export default function TransactionHistory({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  // Pagination State (Minimum 80 per page)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(80);
+
   // Sort State
   const [sortField, setSortField] = useState<TxSortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -62,6 +67,7 @@ export default function TransactionHistory({
 
   // Handle column sorting
   const handleSort = (field: TxSortField) => {
+    setCurrentPage(1);
     if (sortField === field) {
       setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -139,6 +145,25 @@ export default function TransactionHistory({
     return list;
   }, [allTransactions, search, typeFilter, walletFilter, startDate, endDate, wallets, sortField, sortOrder]);
 
+  // Reset to page 1 whenever any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, typeFilter, walletFilter, startDate, endDate]);
+
+  // Paginated Transactions (80+ items per page)
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage));
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
+  const paginatedTransactions = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredTransactions, currentPage, itemsPerPage]);
+
   // Totals for filtered transactions
   const { totalIncome, totalExpense, netTotal } = useMemo(() => {
     let inc = 0;
@@ -164,6 +189,7 @@ export default function TransactionHistory({
     setWalletFilter('all');
     setStartDate('');
     setEndDate('');
+    setCurrentPage(1);
   };
 
   return (
@@ -350,7 +376,7 @@ export default function TransactionHistory({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredTransactions.map((tx) => (
+                  {paginatedTransactions.map((tx) => (
                     <tr key={`${tx.type}-${tx.id}`} className="hover:bg-slate-50/40 transition-colors text-sm text-slate-700">
                       <td className="py-4 px-6">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
@@ -449,7 +475,7 @@ export default function TransactionHistory({
 
             {/* Mobile Card List */}
             <div className="md:hidden divide-y divide-slate-100">
-              {filteredTransactions.map((tx) => (
+              {paginatedTransactions.map((tx) => (
                 <div key={`${tx.type}-${tx.id}`} className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -538,6 +564,16 @@ export default function TransactionHistory({
                 )}
               </div>
             </div>
+
+            {/* Pagination Component */}
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredTransactions.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+              pageSizeOptions={[80, 160, 240]}
+            />
           </>
         )}
       </div>

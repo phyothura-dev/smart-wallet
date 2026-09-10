@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Trash2, Edit3, Calendar, AlertTriangle, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Income, Category, UserProfile, Wallet, getWalletLabel } from '../types';
+import Pagination from './Pagination';
 
 type IncomeSortField = 'title' | 'category' | 'date' | 'amount';
 type SortOrder = 'asc' | 'desc';
@@ -32,6 +33,10 @@ export default function IncomeManager({
   const [sortField, setSortField] = useState<IncomeSortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
+  // Pagination State (Minimum 80 per page)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(80);
+
   // State
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -60,6 +65,7 @@ export default function IncomeManager({
   };
 
   const handleSort = (field: IncomeSortField) => {
+    setCurrentPage(1);
     if (sortField === field) {
       setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -83,6 +89,20 @@ export default function IncomeManager({
       return sortOrder === 'asc' ? result : -result;
     });
   }, [incomes, sortField, sortOrder]);
+
+  // Paginated Incomes (80+ items per page)
+  const totalPages = Math.max(1, Math.ceil(sortedIncomes.length / itemsPerPage));
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
+  const paginatedIncomes = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedIncomes.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedIncomes, currentPage, itemsPerPage]);
 
   const totalIncomeAmount = useMemo(() => {
     return incomes.reduce((sum, item) => sum + item.amount, 0);
@@ -259,7 +279,7 @@ export default function IncomeManager({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {sortedIncomes.map((item) => (
+                  {paginatedIncomes.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors text-sm text-slate-700">
                       <td className="py-4 px-6 font-semibold text-[#111827]">
                         <div className="flex items-center gap-2">
@@ -319,7 +339,7 @@ export default function IncomeManager({
 
             {/* Mobile Card List View */}
             <div className="md:hidden divide-y divide-slate-100">
-              {sortedIncomes.map((item) => (
+              {paginatedIncomes.map((item) => (
                 <div key={item.id} className="p-4 space-y-2.5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -374,6 +394,16 @@ export default function IncomeManager({
                 </span>
               </div>
             </div>
+
+            {/* Pagination Component */}
+            <Pagination
+              currentPage={currentPage}
+              totalItems={sortedIncomes.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+              pageSizeOptions={[80, 160, 240]}
+            />
           </>
         )}
       </div>

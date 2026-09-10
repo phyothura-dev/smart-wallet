@@ -1,332 +1,98 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import {
-  doc,
-  collection,
-  onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  setDoc
-} from 'firebase/firestore';
-import { auth, db, handleFirestoreError, OperationType } from './lib/firebase';
-import type { UserProfile, Category, Income, Expense, Wallet, Transfer } from './types';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
+import { auth } from './lib/firebase';
+import { useUserData } from './hooks/useUserData';
 
-// Components
+// Static layout components (immediate load for fast app shell)
 import Auth from './components/Auth';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import Dashboard from './components/Dashboard';
-import IncomeManager from './components/IncomeManager';
-import ExpenseManager from './components/ExpenseManager';
-import WalletManager from './components/WalletManager';
-import CategoryManager from './components/CategoryManager';
-import TransactionHistory from './components/TransactionHistory';
-import ProfileManager from './components/ProfileManager';
 import { ToastContainer, Toast } from './components/Toast';
 
 import { Wallet as WalletIcon, RefreshCw } from 'lucide-react';
 
+// Lazy-loaded view components (code-split for optimal bundle performance)
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const IncomeManager = lazy(() => import('./components/IncomeManager'));
+const ExpenseManager = lazy(() => import('./components/ExpenseManager'));
+const WalletManager = lazy(() => import('./components/WalletManager'));
+const CategoryManager = lazy(() => import('./components/CategoryManager'));
+const TransactionHistory = lazy(() => import('./components/TransactionHistory'));
+const ProfileManager = lazy(() => import('./components/ProfileManager'));
+
+function ViewLoadingSpinner() {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 text-slate-500">
+      <RefreshCw className="w-6 h-6 animate-spin text-indigo-600 mb-2" />
+      <p className="text-xs font-semibold">စာမျက်နှာ ဖွင့်နေပါသည်...</p>
+    </div>
+  );
+}
+
 export default function App() {
-  // Auth & Session
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [transfers, setTransfers] = useState<Transfer[]>([]);
-  const [incomes, setIncomes] = useState<Income[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  // Auth state
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Navigation & Layout
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Loaders
-  const [authLoading, setAuthLoading] = useState(true);
-  const [dataLoading, setDataLoading] = useState(false);
-  const [dbError, setDbError] = useState<any>(null);
-
   // Notification Toast state
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const handleShowToast = useCallback((message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
-    const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
-  }, []);
+  const handleShowToast = useCallback(
+    (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
+      const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+      setToasts((prev) => [...prev, { id, message, type }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4000);
+    },
+    []
+  );
 
   const handleCloseToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // 1. Listen to Authentication changes & Subscribe to User Collections
+  // Auth state subscription with proper cleanup
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
-      setDbError(null);
-
-      if (!currentUser) {
-        setProfile(null);
-        setCategories([]);
-        setIncomes([]);
-        setExpenses([]);
-        setDataLoading(false);
-        return;
-      }
-
-      // User logged in, begin real-time collection subscriptions
-      setDataLoading(true);
-
-      let loadedProfile = false;
-      let loadedCategories = false;
-      let loadedWallets = false;
-      let loadedIncomes = false;
-      let loadedExpenses = false;
-
-      const checkLoadingFinished = () => {
-        if (loadedProfile && loadedCategories && loadedWallets && loadedIncomes && loadedExpenses) {
-          setDataLoading(false);
-        }
-      };
-
-      // A. Profile listener
-      const unsubProfile = onSnapshot(doc(db, 'users', currentUser.uid), async (docSnap) => {
-        try {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setProfile({
-              uid: currentUser.uid,
-              email: currentUser.email || '',
-              fullName: data.fullName || 'User',
-              photoURL: data.photoURL || '',
-              currency: data.currency || 'Ks',
-              monthlyIncomeGoal: data.monthlyIncomeGoal !== undefined ? data.monthlyIncomeGoal : null,
-            });
-          } else {
-            // Fallback create profile in database if not populated
-            const fallbackProfile = {
-              fullName: currentUser.displayName || 'Finance Member',
-              photoURL: currentUser.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.email || 'User')}`,
-              currency: 'Ks',
-              monthlyIncomeGoal: null,
-              email: currentUser.email || '',
-            };
-            await setDoc(doc(db, 'users', currentUser.uid), fallbackProfile);
-
-            // Also seed default categories for new users
-            const defaultCategories = [
-              { name: 'Salary', type: 'income' },
-              { name: 'Freelance', type: 'income' },
-              { name: 'Bonus', type: 'income' },
-              { name: 'Food', type: 'expense' },
-              { name: 'Transport', type: 'expense' },
-              { name: 'Shopping', type: 'expense' },
-              { name: 'Bills', type: 'expense' },
-              { name: 'Entertainment', type: 'expense' }
-            ];
-            for (const cat of defaultCategories) {
-              const catId = cat.name.toLowerCase().replace(/\s+/g, '-');
-              const catRef = doc(db, 'users', currentUser.uid, 'categories', catId);
-              await setDoc(catRef, {
-                name: cat.name,
-                type: cat.type
-              });
-            }
-          }
-        } catch (err) {
-          handleFirestoreError(err, OperationType.WRITE, `users/${currentUser.uid}`);
-        }
-
-        if (!loadedProfile) {
-          loadedProfile = true;
-          checkLoadingFinished();
-        }
-      }, (err) => {
-        console.error("Firestore listener error for profile:", err);
-        setDbError({
-          message: err instanceof Error ? err.message : String(err),
-          code: (err as any).code || 'unknown',
-          path: `users/${currentUser.uid}`
-        });
-        setDataLoading(false);
-      });
-
-      // B. Categories listener
-      const unsubCategories = onSnapshot(collection(db, 'users', currentUser.uid, 'categories'), (snapshot) => {
-        const list: Category[] = [];
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          list.push({
-            id: docSnap.id,
-            name: data.name || '',
-            type: data.type || 'expense',
-          });
-        });
-        setCategories(list);
-
-        if (!loadedCategories) {
-          loadedCategories = true;
-          checkLoadingFinished();
-        }
-      }, (err) => {
-        console.error("Firestore listener error for categories:", err);
-        setDbError({
-          message: err instanceof Error ? err.message : String(err),
-          code: (err as any).code || 'unknown',
-          path: `users/${currentUser.uid}/categories`
-        });
-        setDataLoading(false);
-      });
-
-      // C. Wallets listener
-      const unsubWallets = onSnapshot(collection(db, 'users', currentUser.uid, 'wallets'), async (snapshot) => {
-        if (snapshot.empty) {
-          try {
-            const defaultWallets = [
-              { type: 'kbz_pay' as const, initialBalance: 0 },
-              { type: 'wave_pay' as const, initialBalance: 0 },
-              { type: 'cb_pay' as const, initialBalance: 0 },
-              { type: 'mab_bank' as const, initialBalance: 0 },
-              { type: 'yoma_bank' as const, initialBalance: 0 },
-            ];
-            for (const w of defaultWallets) {
-              await addDoc(collection(db, 'users', currentUser.uid, 'wallets'), {
-                ...w,
-                createdAt: new Date().toISOString()
-              });
-            }
-          } catch (seedErr) {
-            console.error("Error seeding default wallets:", seedErr);
-          }
-        } else {
-          const list: Wallet[] = [];
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            list.push({
-              id: docSnap.id,
-              type: (data.type as any) || 'kbz_pay',
-              initialBalance: data.initialBalance || 0,
-              name: data.name,
-              createdAt: data.createdAt || '',
-            });
-          });
-          setWallets(list);
-        }
-
-        if (!loadedWallets) {
-          loadedWallets = true;
-          checkLoadingFinished();
-        }
-      }, (err) => {
-        console.error("Firestore listener error for wallets:", err);
-        setDbError({
-          message: err instanceof Error ? err.message : String(err),
-          code: (err as any).code || 'unknown',
-          path: `users/${currentUser.uid}/wallets`
-        });
-        setDataLoading(false);
-      });
-
-      // D. Incomes listener
-      const unsubIncomes = onSnapshot(collection(db, 'users', currentUser.uid, 'incomes'), (snapshot) => {
-        const list: Income[] = [];
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          list.push({
-            id: docSnap.id,
-            title: data.title || '',
-            amount: data.amount || 0,
-            category: data.category || '',
-            date: data.date || '',
-            walletId: data.walletId,
-            note: data.note,
-            createdAt: data.createdAt || '',
-          });
-        });
-        setIncomes(list);
-
-        if (!loadedIncomes) {
-          loadedIncomes = true;
-          checkLoadingFinished();
-        }
-      }, (err) => {
-        console.error("Firestore listener error for incomes:", err);
-        setDbError({
-          message: err instanceof Error ? err.message : String(err),
-          code: (err as any).code || 'unknown',
-          path: `users/${currentUser.uid}/incomes`
-        });
-        setDataLoading(false);
-      });
-
-      // E. Expenses listener
-      const unsubExpenses = onSnapshot(collection(db, 'users', currentUser.uid, 'expenses'), (snapshot) => {
-        const list: Expense[] = [];
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          list.push({
-            id: docSnap.id,
-            title: data.title || '',
-            amount: data.amount || 0,
-            category: data.category || '',
-            date: data.date || '',
-            walletId: data.walletId,
-            note: data.note,
-            createdAt: data.createdAt || '',
-          });
-        });
-        setExpenses(list);
-
-        if (!loadedExpenses) {
-          loadedExpenses = true;
-          checkLoadingFinished();
-        }
-      }, (err) => {
-        console.error("Firestore listener error for expenses:", err);
-        setDbError({
-          message: err instanceof Error ? err.message : String(err),
-          code: (err as any).code || 'unknown',
-          path: `users/${currentUser.uid}/expenses`
-        });
-        setDataLoading(false);
-      });
-
-      // F. Transfers listener
-      const unsubTransfers = onSnapshot(collection(db, 'users', currentUser.uid, 'transfers'), (snapshot) => {
-        const list: Transfer[] = [];
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          list.push({
-            id: docSnap.id,
-            fromWalletId: data.fromWalletId || '',
-            toWalletId: data.toWalletId || '',
-            amount: data.amount || 0,
-            date: data.date || '',
-            createdAt: data.createdAt || '',
-          });
-        });
-        setTransfers(list);
-      }, (err) => {
-        console.error("Firestore listener error for transfers:", err);
-      });
-
-      return () => {
-        unsubProfile();
-        unsubCategories();
-        unsubWallets();
-        unsubIncomes();
-        unsubExpenses();
-        unsubTransfers();
-      };
     });
 
     return () => unsubAuth();
   }, []);
 
-  // 2. Auth handlers
+  // Hook managing all Firestore real-time subscriptions and CRUD operations
+  const {
+    profile,
+    categories,
+    wallets,
+    transfers,
+    incomes,
+    expenses,
+    dataLoading,
+    dbError,
+    handleAddIncome,
+    handleEditIncome,
+    handleDeleteIncome,
+    handleAddExpense,
+    handleEditExpense,
+    handleDeleteExpense,
+    handleAddCategory,
+    handleRenameCategory,
+    handleDeleteCategory,
+    handleAddWallet,
+    handleEditWallet,
+    handleDeleteWallet,
+    handleAddTransfer,
+    handleDeleteTransfer,
+    handleUpdateProfile,
+  } = useUserData(user);
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -335,177 +101,6 @@ export default function App() {
     } catch (err) {
       console.error(err);
       handleShowToast('အကောင့်မှ ထွက်ခြင်း မအောင်မြင်ပါ။ ထပ်မံကြိုးစားကြည့်ပါ။', 'error');
-    }
-  };
-
-  // 3. Database operations
-  const handleAddIncome = async (data: Omit<Income, 'id' | 'createdAt'>) => {
-    if (!user) return;
-    const path = `users/${user.uid}/incomes`;
-    try {
-      await addDoc(collection(db, 'users', user.uid, 'incomes'), {
-        ...data,
-        createdAt: new Date().toISOString(),
-      });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, path);
-    }
-  };
-
-  const handleEditIncome = async (id: string, data: Omit<Income, 'id' | 'createdAt'>) => {
-    if (!user) return;
-    const path = `users/${user.uid}/incomes/${id}`;
-    try {
-      await updateDoc(doc(db, 'users', user.uid, 'incomes', id), data);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, path);
-    }
-  };
-
-  const handleDeleteIncome = async (id: string) => {
-    if (!user) return;
-    const path = `users/${user.uid}/incomes/${id}`;
-    try {
-      await deleteDoc(doc(db, 'users', user.uid, 'incomes', id));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, path);
-    }
-  };
-
-  const handleAddExpense = async (data: Omit<Expense, 'id' | 'createdAt'>) => {
-    if (!user) return;
-    const path = `users/${user.uid}/expenses`;
-    try {
-      await addDoc(collection(db, 'users', user.uid, 'expenses'), {
-        ...data,
-        createdAt: new Date().toISOString(),
-      });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, path);
-    }
-  };
-
-  const handleEditExpense = async (id: string, data: Omit<Expense, 'id' | 'createdAt'>) => {
-    if (!user) return;
-    const path = `users/${user.uid}/expenses/${id}`;
-    try {
-      await updateDoc(doc(db, 'users', user.uid, 'expenses', id), data);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, path);
-    }
-  };
-
-  const handleDeleteExpense = async (id: string) => {
-    if (!user) return;
-    const path = `users/${user.uid}/expenses/${id}`;
-    try {
-      await deleteDoc(doc(db, 'users', user.uid, 'expenses', id));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, path);
-    }
-  };
-
-  const handleAddCategory = async (name: string, type: 'income' | 'expense') => {
-    if (!user) return;
-    const catId = name.toLowerCase().trim().replace(/\s+/g, '-');
-    const path = `users/${user.uid}/categories/${catId}`;
-    try {
-      await setDoc(doc(db, 'users', user.uid, 'categories', catId), {
-        name: name.trim(),
-        type,
-      });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, path);
-    }
-  };
-
-  const handleRenameCategory = async (id: string, name: string) => {
-    if (!user) return;
-    const path = `users/${user.uid}/categories/${id}`;
-    try {
-      await updateDoc(doc(db, 'users', user.uid, 'categories', id), {
-        name: name.trim(),
-      });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, path);
-    }
-  };
-
-  const handleDeleteCategory = async (id: string) => {
-    if (!user) return;
-    const path = `users/${user.uid}/categories/${id}`;
-    try {
-      await deleteDoc(doc(db, 'users', user.uid, 'categories', id));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, path);
-    }
-  };
-
-  const handleAddWallet = async (data: Omit<Wallet, 'id' | 'createdAt'>) => {
-    if (!user) return;
-    const path = `users/${user.uid}/wallets`;
-    try {
-      await addDoc(collection(db, 'users', user.uid, 'wallets'), {
-        ...data,
-        createdAt: new Date().toISOString(),
-      });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, path);
-    }
-  };
-
-  const handleEditWallet = async (id: string, data: Partial<Wallet>) => {
-    if (!user) return;
-    const path = `users/${user.uid}/wallets/${id}`;
-    try {
-      await updateDoc(doc(db, 'users', user.uid, 'wallets', id), data);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, path);
-    }
-  };
-
-  const handleDeleteWallet = async (id: string) => {
-    if (!user) return;
-    const path = `users/${user.uid}/wallets/${id}`;
-    try {
-      await deleteDoc(doc(db, 'users', user.uid, 'wallets', id));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, path);
-    }
-  };
-
-  const handleAddTransfer = async (data: Omit<Transfer, 'id' | 'createdAt'>) => {
-    if (!user) return;
-    const path = `users/${user.uid}/transfers`;
-    try {
-      await addDoc(collection(db, 'users', user.uid, 'transfers'), {
-        ...data,
-        createdAt: new Date().toISOString(),
-      });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, path);
-      throw err;
-    }
-  };
-
-  const handleDeleteTransfer = async (id: string) => {
-    if (!user) return;
-    const path = `users/${user.uid}/transfers/${id}`;
-    try {
-      await deleteDoc(doc(db, 'users', user.uid, 'transfers', id));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, path);
-      throw err;
-    }
-  };
-
-  const handleUpdateProfile = async (data: Partial<UserProfile>) => {
-    if (!user) return;
-    const path = `users/${user.uid}`;
-    try {
-      await updateDoc(doc(db, 'users', user.uid), data);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, path);
     }
   };
 
@@ -669,87 +264,89 @@ export default function App() {
         {/* Scrollable layout sandbox */}
         <main className="flex-1 overflow-y-auto px-4 py-4 md:px-8 md:py-8 scrollbar-thin">
           <div className="mx-auto w-full max-w-7xl">
-            {currentTab === 'dashboard' && (
-              <Dashboard
-                incomes={incomes}
-                expenses={expenses}
-                wallets={wallets}
-                transfers={transfers}
-                profile={profile}
-                onChangeTab={setCurrentTab}
-                onAddTransfer={handleAddTransfer}
-                onShowToast={handleShowToast}
-              />
-            )}
+            <Suspense fallback={<ViewLoadingSpinner />}>
+              {currentTab === 'dashboard' && (
+                <Dashboard
+                  incomes={incomes}
+                  expenses={expenses}
+                  wallets={wallets}
+                  transfers={transfers}
+                  profile={profile}
+                  onChangeTab={setCurrentTab}
+                  onAddTransfer={handleAddTransfer}
+                  onShowToast={handleShowToast}
+                />
+              )}
 
-            {currentTab === 'incomes' && (
-              <IncomeManager
-                incomes={incomes}
-                categories={categories}
-                wallets={wallets}
-                profile={profile}
-                onAddIncome={handleAddIncome}
-                onEditIncome={handleEditIncome}
-                onDeleteIncome={handleDeleteIncome}
-                onShowToast={handleShowToast}
-              />
-            )}
+              {currentTab === 'incomes' && (
+                <IncomeManager
+                  incomes={incomes}
+                  categories={categories}
+                  wallets={wallets}
+                  profile={profile}
+                  onAddIncome={handleAddIncome}
+                  onEditIncome={handleEditIncome}
+                  onDeleteIncome={handleDeleteIncome}
+                  onShowToast={handleShowToast}
+                />
+              )}
 
-            {currentTab === 'expenses' && (
-              <ExpenseManager
-                expenses={expenses}
-                categories={categories}
-                wallets={wallets}
-                profile={profile}
-                onAddExpense={handleAddExpense}
-                onEditExpense={handleEditExpense}
-                onDeleteExpense={handleDeleteExpense}
-                onShowToast={handleShowToast}
-              />
-            )}
+              {currentTab === 'expenses' && (
+                <ExpenseManager
+                  expenses={expenses}
+                  categories={categories}
+                  wallets={wallets}
+                  profile={profile}
+                  onAddExpense={handleAddExpense}
+                  onEditExpense={handleEditExpense}
+                  onDeleteExpense={handleDeleteExpense}
+                  onShowToast={handleShowToast}
+                />
+              )}
 
-            {currentTab === 'wallets' && (
-              <WalletManager
-                wallets={wallets}
-                incomes={incomes}
-                expenses={expenses}
-                transfers={transfers}
-                onAddWallet={handleAddWallet}
-                onEditWallet={handleEditWallet}
-                onDeleteWallet={handleDeleteWallet}
-                onAddTransfer={handleAddTransfer}
-                onDeleteTransfer={handleDeleteTransfer}
-                onShowToast={handleShowToast}
-              />
-            )}
+              {currentTab === 'wallets' && (
+                <WalletManager
+                  wallets={wallets}
+                  incomes={incomes}
+                  expenses={expenses}
+                  transfers={transfers}
+                  onAddWallet={handleAddWallet}
+                  onEditWallet={handleEditWallet}
+                  onDeleteWallet={handleDeleteWallet}
+                  onAddTransfer={handleAddTransfer}
+                  onDeleteTransfer={handleDeleteTransfer}
+                  onShowToast={handleShowToast}
+                />
+              )}
 
-            {currentTab === 'categories' && (
-              <CategoryManager
-                categories={categories}
-                onAddCategory={handleAddCategory}
-                onRenameCategory={handleRenameCategory}
-                onDeleteCategory={handleDeleteCategory}
-                onShowToast={handleShowToast}
-              />
-            )}
+              {currentTab === 'categories' && (
+                <CategoryManager
+                  categories={categories}
+                  onAddCategory={handleAddCategory}
+                  onRenameCategory={handleRenameCategory}
+                  onDeleteCategory={handleDeleteCategory}
+                  onShowToast={handleShowToast}
+                />
+              )}
 
-            {currentTab === 'transactions' && (
-              <TransactionHistory
-                incomes={incomes}
-                expenses={expenses}
-                categories={categories}
-                wallets={wallets}
-                profile={profile}
-              />
-            )}
+              {currentTab === 'transactions' && (
+                <TransactionHistory
+                  incomes={incomes}
+                  expenses={expenses}
+                  categories={categories}
+                  wallets={wallets}
+                  profile={profile}
+                />
+              )}
 
-            {currentTab === 'profile' && (
-              <ProfileManager
-                profile={profile}
-                onUpdateProfile={handleUpdateProfile}
-                onShowToast={handleShowToast}
-              />
-            )}
+              {currentTab === 'profile' && (
+                <ProfileManager
+                  profile={profile}
+                  onUpdateProfile={handleUpdateProfile}
+                  onShowToast={handleShowToast}
+                />
+              )}
+            </Suspense>
           </div>
         </main>
       </div>

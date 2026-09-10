@@ -6,8 +6,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { auth } from '../lib/firebase';
+import { seedNewUserData } from '../lib/seedData';
 import { Wallet, Mail, Lock, User, RefreshCw, Eye, EyeOff, CheckCircle, Chrome } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -89,37 +89,14 @@ export default function Auth({ onShowToast }: AuthProps) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Setup user profile in firestore
+      // 2. Setup user profile, default categories, and default wallets atomically
       const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fullName)}`;
-      const userRef = doc(db, 'users', user.uid);
-      await setDoc(userRef, {
+      await seedNewUserData(user.uid, {
         fullName,
+        email,
         photoURL: avatarUrl,
         currency,
-        monthlyIncomeGoal: null,
-        email: email
       });
-
-      // 3. Seed default categories
-      const defaultCategories = [
-        { name: 'လစာ', type: 'income' },
-        { name: 'အလွတ်တန်းလုပ်ငန်း', type: 'income' },
-        { name: 'အပိုဆုကြေး', type: 'income' },
-        { name: 'စားသောက်စရိတ်', type: 'expense' },
-        { name: 'လမ်းစရိတ်', type: 'expense' },
-        { name: 'စျေးဝယ်ခြင်း', type: 'expense' },
-        { name: 'မီတာနှင့် ဘေလ်များ', type: 'expense' },
-        { name: 'အပန်းဖြေစရိတ်', type: 'expense' }
-      ];
-
-      for (const cat of defaultCategories) {
-        const catId = cat.name.toLowerCase().replace(/\s+/g, '-');
-        const catRef = doc(db, 'users', user.uid, 'categories', catId);
-        await setDoc(catRef, {
-          name: cat.name,
-          type: cat.type
-        });
-      }
 
       onShowToast('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ ကြိုဆိုပါသည်!', 'success');
     } catch (err: any) {

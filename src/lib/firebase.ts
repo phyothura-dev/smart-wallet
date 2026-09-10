@@ -1,6 +1,11 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  getFirestore,
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
@@ -15,7 +20,28 @@ const databaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || "(default)";
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = databaseId && databaseId !== "(default)" ? getFirestore(app, databaseId) : getFirestore(app);
+
+// Initialize Firestore with Persistent Local Cache (IndexedDB) for offline support and instant loading
+let firestoreDb;
+try {
+  const firestoreSettings = {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
+  };
+  firestoreDb =
+    databaseId && databaseId !== "(default)"
+      ? initializeFirestore(app, firestoreSettings, databaseId)
+      : initializeFirestore(app, firestoreSettings);
+} catch (err) {
+  console.warn("Falling back to standard Firestore without persistent cache:", err);
+  firestoreDb =
+    databaseId && databaseId !== "(default)"
+      ? getFirestore(app, databaseId)
+      : getFirestore(app);
+}
+
+export const db = firestoreDb;
 
 // SECTION 3: Firestore Error Handling
 export enum OperationType {
@@ -64,20 +90,3 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
-
-// CRITICAL CONSTRAINT: Test the database connection on initial boot
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-    console.log("Firestore connection test: successfully reached backend.");
-  } catch (error: any) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration: client is offline.");
-    } else if (error && (error.code === 'permission-denied' || error.message?.includes('permission'))) {
-      console.log("Firestore connection test: reached backend successfully (received expected zero-trust permission denial).");
-    } else {
-      console.warn("Firestore connection test status:", error?.message || error);
-    }
-  }
-}
-testConnection();
