@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { useUserData } from './hooks/useUserData';
+import { usePWA } from './hooks/usePWA';
 
 // Static layout components (immediate load for fast app shell)
 import Auth from './components/Auth';
@@ -37,6 +38,9 @@ export default function App() {
   // Navigation & Layout
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Progressive Web App (PWA) controller
+  const { isInstallable, isOnline, isUpdateAvailable, installApp, updateApp } = usePWA();
 
   // Notification Toast state
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -250,6 +254,8 @@ export default function App() {
         onSignOut={handleSignOut}
         isMobileOpen={mobileSidebarOpen}
         onCloseMobile={() => setMobileSidebarOpen(false)}
+        isInstallable={isInstallable}
+        onInstallApp={installApp}
       />
 
       {/* Main content frame */}
@@ -259,6 +265,11 @@ export default function App() {
           profile={profile}
           onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
           totalIncomeForMonth={totalIncomeForCurrentMonth}
+          isInstallable={isInstallable}
+          onInstallApp={installApp}
+          isOnline={isOnline}
+          isUpdateAvailable={isUpdateAvailable}
+          onUpdateApp={updateApp}
         />
 
         {/* Scrollable layout sandbox */}

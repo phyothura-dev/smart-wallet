@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowUpRight, ArrowDownRight, FolderTree, ArrowLeftRight, UserCircle, LogOut, Wallet, WalletCards, X } from 'lucide-react';
+import { LayoutDashboard, ArrowUpRight, ArrowDownRight, FolderTree, ArrowLeftRight, UserCircle, LogOut, Wallet, WalletCards, X, Download } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface SidebarProps {
@@ -8,6 +8,8 @@ interface SidebarProps {
   onSignOut: () => void;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
+  isInstallable?: boolean;
+  onInstallApp?: () => void;
 }
 
 export default function Sidebar({
@@ -17,6 +19,8 @@ export default function Sidebar({
   onSignOut,
   isMobileOpen,
   onCloseMobile,
+  isInstallable = false,
+  onInstallApp,
 }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'ပင်မစာမျက်နှာ', icon: LayoutDashboard },
@@ -123,6 +127,21 @@ export default function Sidebar({
             </div>
           </div>
           
+          {isInstallable && onInstallApp && (
+            <button
+              id="sidebar-btn-install"
+              type="button"
+              onClick={() => {
+                onInstallApp();
+                onCloseMobile();
+              }}
+              className="mt-3 flex w-full min-h-[44px] items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#4F46E5] bg-indigo-50 hover:bg-indigo-100 transition-colors cursor-pointer border border-indigo-100"
+            >
+              <Download className="h-5 w-5 text-[#4F46E5] flex-shrink-0" />
+              App သွင်းမည် (PWA)
+            </button>
+          )}
+
           <button
             id="sidebar-btn-signout"
             onClick={() => {
