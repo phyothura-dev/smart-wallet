@@ -21,7 +21,7 @@ const databaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || "(default)";
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// Initialize Firestore with Persistent Local Cache (IndexedDB) for offline support and instant loading
+// firestore persistent cache
 let firestoreDb;
 try {
   const firestoreSettings = {
@@ -33,8 +33,7 @@ try {
     databaseId && databaseId !== "(default)"
       ? initializeFirestore(app, firestoreSettings, databaseId)
       : initializeFirestore(app, firestoreSettings);
-} catch (err) {
-  console.warn("Falling back to standard Firestore without persistent cache:", err);
+} catch {
   firestoreDb =
     databaseId && databaseId !== "(default)"
       ? getFirestore(app, databaseId)
@@ -43,7 +42,7 @@ try {
 
 export const db = firestoreDb;
 
-// SECTION 3: Firestore Error Handling
+// firestore error handling
 export enum OperationType {
   CREATE = 'create',
   UPDATE = 'update',
@@ -87,6 +86,5 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }

@@ -18,7 +18,7 @@ export function usePWA() {
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
 
   useEffect(() => {
-    // 1. Check if running in standalone mode (already installed)
+    // check standalone mode
     const checkStandalone = () => {
       const isStandalone =
         window.matchMedia('(display-mode: standalone)').matches ||
@@ -29,21 +29,21 @@ export function usePWA() {
 
     checkStandalone();
 
-    // 2. Listen for beforeinstallprompt
+    // beforeinstallprompt listener
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
     };
 
-    // 3. Listen for appinstalled
+    // appinstalled listener
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setIsInstallable(false);
       setDeferredPrompt(null);
     };
 
-    // 4. Online/Offline listeners
+    // network status listeners
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
@@ -52,14 +52,14 @@ export function usePWA() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // 5. Service Worker registration & updates
+    // service worker registration
     if ('serviceWorker' in navigator && process.env.NODE_ENV !== 'test') {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
           setSwRegistration(registration);
 
-          // Check if an update is already waiting
+          // check waiting update
           if (registration.waiting) {
             setIsUpdateAvailable(true);
           }
@@ -75,11 +75,9 @@ export function usePWA() {
             }
           });
         })
-        .catch((err) => {
-          console.error('Service worker registration failed:', err);
-        });
+        .catch(() => {});
 
-      // Reload when new service worker takes over
+      // auto-reload on update
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
@@ -97,7 +95,7 @@ export function usePWA() {
     };
   }, []);
 
-  // Trigger browser native install prompt
+  // install prompt
   const installApp = useCallback(async () => {
     if (!deferredPrompt) return false;
 
@@ -111,13 +109,12 @@ export function usePWA() {
         return true;
       }
       return false;
-    } catch (err) {
-      console.error('Error installing PWA:', err);
+    } catch {
       return false;
     }
   }, [deferredPrompt]);
 
-  // Activate waiting service worker and refresh
+  // apply update
   const updateApp = useCallback(() => {
     if (swRegistration && swRegistration.waiting) {
       swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });

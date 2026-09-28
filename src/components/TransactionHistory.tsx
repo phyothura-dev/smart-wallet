@@ -4,13 +4,16 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
-  X,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  FileSpreadsheet,
+  ChevronDown
 } from 'lucide-react';
 import { Income, Expense, Category, UserProfile, Transaction, Wallet, getWalletLabel } from '../types';
 import Pagination from './Pagination';
+import { exportTransactionsToCSV } from '../utils/export';
+import { getCurrentMonthRange } from '../utils/finance';
 
 type TxSortField = 'type' | 'title' | 'category' | 'wallet' | 'date' | 'amount';
 type SortOrder = 'asc' | 'desc';
@@ -21,6 +24,7 @@ interface TransactionHistoryProps {
   categories: Category[];
   wallets?: Wallet[];
   profile: UserProfile | null;
+  onShowToast?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 export default function TransactionHistory({
@@ -29,25 +33,29 @@ export default function TransactionHistory({
   categories: _categories,
   wallets = [],
   profile: _profile,
+  onShowToast,
 }: TransactionHistoryProps) {
   const currencySymbol = 'Ks ';
 
-  // Filters State
+  // default date range to current month
+  const currentMonth = useMemo(() => getCurrentMonthRange(), []);
+
+  // filter state
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [walletFilter, setWalletFilter] = useState('all');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(currentMonth.start);
+  const [endDate, setEndDate] = useState(currentMonth.end);
 
-  // Pagination State (Minimum 80 per page)
+  // pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(80);
 
-  // Sort State
+  // sort state
   const [sortField, setSortField] = useState<TxSortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
-  // Unified lists
+  // unified list
   const allTransactions = useMemo(() => {
     const list: Transaction[] = [
       ...incomes.map((inc) => ({ ...inc, type: 'income' as const })),
@@ -65,7 +73,7 @@ export default function TransactionHistory({
     return found ? getWalletLabel(found.type, found.name) : null;
   };
 
-  // Handle column sorting
+  // column sorting
   const handleSort = (field: TxSortField) => {
     setCurrentPage(1);
     if (sortField === field) {
@@ -81,28 +89,28 @@ export default function TransactionHistory({
       return <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 opacity-40 group-hover:opacity-100 transition-opacity" />;
     }
     return sortOrder === 'asc' ? (
-      <ArrowUp className="w-3.5 h-3.5 text-indigo-600" />
+      <ArrowUp className="w-3.5 h-3.5 text-blue-600" />
     ) : (
-      <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
+      <ArrowDown className="w-3.5 h-3.5 text-blue-600" />
     );
   };
 
-  // Apply filters and sorting
+  // apply filters and sorting
   const filteredTransactions = useMemo(() => {
     let list = [...allTransactions];
 
-    // 1. Search text
+    // search filter
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((tx) => tx.title.toLowerCase().includes(q));
     }
 
-    // 2. Type Filter
+    // type filter
     if (typeFilter !== 'all') {
       list = list.filter((tx) => tx.type === typeFilter);
     }
 
-    // 3. Wallet filter
+    // wallet filter
     if (walletFilter !== 'all') {
       list = list.filter((tx) => {
         const effectiveWalletId = tx.walletId || wallets[0]?.id;
@@ -110,7 +118,7 @@ export default function TransactionHistory({
       });
     }
 
-    // 4. Date range filter
+    // date range filter
     if (startDate) {
       list = list.filter((tx) => tx.date >= startDate);
     }
@@ -118,7 +126,7 @@ export default function TransactionHistory({
       list = list.filter((tx) => tx.date <= endDate);
     }
 
-    // 5. Dynamic sort
+    // dynamic sort
     list.sort((a, b) => {
       let result = 0;
       if (sortField === 'type') {
@@ -145,12 +153,12 @@ export default function TransactionHistory({
     return list;
   }, [allTransactions, search, typeFilter, walletFilter, startDate, endDate, wallets, sortField, sortOrder]);
 
-  // Reset to page 1 whenever any filter changes
+  // reset page on filter change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, typeFilter, walletFilter, startDate, endDate]);
 
-  // Paginated Transactions (80+ items per page)
+  // paginated transactions
   const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage));
 
   useEffect(() => {
@@ -164,7 +172,7 @@ export default function TransactionHistory({
     return filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredTransactions, currentPage, itemsPerPage]);
 
-  // Totals for filtered transactions
+  // filtered totals
   const { totalIncome, totalExpense, netTotal } = useMemo(() => {
     let inc = 0;
     let exp = 0;
@@ -182,111 +190,134 @@ export default function TransactionHistory({
     };
   }, [filteredTransactions]);
 
-  // Clear filters helper
+  // clear filters
   const handleClearFilters = () => {
     setSearch('');
     setTypeFilter('all');
     setWalletFilter('all');
-    setStartDate('');
-    setEndDate('');
+    setStartDate(currentMonth.start);
+    setEndDate(currentMonth.end);
     setCurrentPage(1);
+  };
+
+  const handleExportExcel = () => {
+    if (filteredTransactions.length === 0) {
+      if (onShowToast) onShowToast('ထုတ်ယူရန် စာရင်းမှတ်တမ်း မရှိပါ။', 'error');
+      return;
+    }
+    try {
+      exportTransactionsToCSV(filteredTransactions, wallets, currencySymbol);
+      if (onShowToast) {
+        onShowToast(`စာရင်း ${filteredTransactions.length} ခုကို Excel/CSV အဖြစ် အောင်မြင်စွာ ထုတ်ယူပြီးပါပြီ။`, 'success');
+      }
+    } catch {
+      if (onShowToast) {
+        onShowToast('Excel ထုတ်ယူရာတွင် အမှားဖြစ်ပေါ်ခဲ့ပါသည်။', 'error');
+      }
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Search & Filter bar card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      {/* Search & Filter Header Container */}
+      <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 space-y-3.5 shadow-2xs">
+        {/* Title & Export Action Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-slate-900 text-base">စာရင်းမှတ်တမ်းအားလုံး</h3>
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+              {filteredTransactions.length}
+            </span>
+          </div>
+
+          <button
+            id="btn-export-excel"
+            type="button"
+            onClick={handleExportExcel}
+            disabled={filteredTransactions.length === 0}
+            className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition-all focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-xs self-stretch sm:self-auto"
+            title="Excel/CSV ဖိုင်အဖြစ် ဒေါင်းလုဒ်ရယူပါ"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 flex-shrink-0" />
+            <span>Excel / CSV ထုတ်ယူမည်</span>
+          </button>
+        </div>
+
+        {/* Filter Controls Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
           {/* Search */}
-          <div className="relative sm:col-span-2 md:col-span-2">
-            <Search className="absolute left-3.5 top-3 sm:top-2.5 h-4 w-4 text-slate-400" />
+          <div className={`relative sm:col-span-2 ${wallets.length > 0 ? 'lg:col-span-4' : 'lg:col-span-5'}`}>
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <input
               id="tx-search-input"
               type="text"
               placeholder="မှတ်တမ်းများကို ရှာဖွေပါ..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-base sm:text-sm focus:ring-1 focus:ring-indigo-500 bg-white transition-colors"
+              className="w-full pl-9 pr-3 py-2 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
             />
           </div>
 
           {/* Type Filter Select */}
-          <div className="relative">
+          <div className={`relative ${wallets.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
             <select
               id="tx-filter-type"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as 'all' | 'income' | 'expense')}
-              className="w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 text-sm focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
+              className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
             >
-              <option value="all">အားလုံး</option>
-              <option value="income">ဝင်ငွေ</option>
-              <option value="expense">ထွက်ငွေ</option>
+              <option value="all">အမျိုးအစား: အားလုံး</option>
+              <option value="income">ဝင်ငွေသာ</option>
+              <option value="expense">ထွက်ငွေသာ</option>
             </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
           </div>
 
           {/* Wallet Filter Select */}
           {wallets.length > 0 && (
-            <div className="relative">
+            <div className="relative lg:col-span-3">
               <select
                 id="tx-filter-wallet"
                 value={walletFilter}
                 onChange={(e) => setWalletFilter(e.target.value)}
-                className="w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 text-sm focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
+                className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
               >
-                <option value="all">ပိုက်ဆံအိတ် အားလုံး</option>
+                <option value="all">ပိုက်ဆံအိတ်: အားလုံး</option>
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
                     {getWalletLabel(w.type, w.name)}
                   </option>
                 ))}
               </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             </div>
           )}
-        </div>
 
-        {/* Date range filter options */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 border-t border-slate-100">
-          {/* Start Date */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              စတင်ရက်
-            </label>
-            <input
-              id="tx-start-date"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 sm:py-1.5 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 text-sm sm:text-xs focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
-            />
-          </div>
-
-          {/* End Date */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              ပြီးဆုံးရက်
-            </label>
-            <input
-              id="tx-end-date"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 sm:py-1.5 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 text-sm sm:text-xs focus:ring-1 focus:ring-indigo-500 transition-colors cursor-pointer"
-            />
+          {/* Date Range Inputs */}
+          <div className={`flex items-center gap-1.5 sm:col-span-2 ${wallets.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
+            <div className="relative flex-1 min-w-0">
+              <input
+                id="tx-start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                title="စတင်ရက်"
+                className="w-full min-w-0 px-2.5 py-2 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
+              />
+            </div>
+            <span className="text-slate-300 text-xs font-semibold select-none flex-shrink-0">–</span>
+            <div className="relative flex-1 min-w-0">
+              <input
+                id="tx-end-date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                title="ပြီးဆုံးရက်"
+                className="w-full min-w-0 px-2.5 py-2 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
+              />
+            </div>
           </div>
         </div>
-
-        {/* Reset filters row */}
-        {(search || typeFilter !== 'all' || walletFilter !== 'all' || startDate || endDate) && (
-          <div className="flex justify-end pt-1">
-            <button
-              id="btn-clear-tx-filters"
-              onClick={handleClearFilters}
-              className="flex items-center gap-1.5 text-xs font-medium text-[#DC2626] hover:text-[#B91C1C] focus:outline-none transition-colors cursor-pointer py-1"
-            >
-              <X className="w-3.5 h-3.5" /> စစ်ထုတ်မှုများ ဖျက်မည်
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Transactions Data Table */}

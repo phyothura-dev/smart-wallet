@@ -3,6 +3,8 @@ import {
   Smartphone,
   Building2,
   Wallet as WalletIcon,
+  Banknote,
+  Coins,
   Plus,
   Edit3,
   Trash2,
@@ -33,22 +35,44 @@ interface WalletManagerProps {
 }
 
 export const SUPPORTED_WALLET_TYPES: { id: WalletType; label: string }[] = [
+  { id: 'cash', label: 'ငွေသား (Cash)' },
   { id: 'kbz_pay', label: 'KBZPay' },
   { id: 'wave_pay', label: 'WavePay' },
+  { id: 'aya_pay', label: 'AYA Pay' },
   { id: 'cb_pay', label: 'CBPay' },
-  { id: 'mab_bank', label: 'MAB Bank' },
+  { id: 'uab_pay', label: 'UAB Pay' },
+  { id: 'kbz_bank', label: 'KBZ Banking' },
+  { id: 'aya_bank', label: 'AYA Banking' },
+  { id: 'cb_bank', label: 'CB Banking' },
+  { id: 'uab_bank', label: 'UAB Banking' },
   { id: 'yoma_bank', label: 'Yoma Bank' },
+  { id: 'mab_bank', label: 'MAB Bank' },
+  { id: 'a_bank', label: 'A Bank' },
+  { id: 'mcb_bank', label: 'MCB Bank' },
+  { id: 'custom', label: 'အခြား (Custom)' },
 ];
 
 export function getWalletIcon(type: string) {
   switch (type) {
+    case 'cash':
+      return Banknote;
     case 'kbz_pay':
     case 'wave_pay':
     case 'cb_pay':
+    case 'aya_pay':
+    case 'uab_pay':
       return Smartphone;
-    case 'mab_bank':
+    case 'kbz_bank':
+    case 'aya_bank':
+    case 'cb_bank':
+    case 'uab_bank':
     case 'yoma_bank':
+    case 'mab_bank':
+    case 'a_bank':
+    case 'mcb_bank':
       return Building2;
+    case 'custom':
+      return Coins;
     default:
       return WalletIcon;
   }
@@ -71,17 +95,18 @@ export default function WalletManager({
   onShowToast,
   currencySymbol = 'Ks '
 }: WalletManagerProps) {
-  // Wallet modal state
+  // wallet modal state
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Wallet form fields (only type and initialBalance)
-  const [type, setType] = useState<WalletType>('kbz_pay');
+  // form fields
+  const [type, setType] = useState<WalletType>('cash');
+  const [walletName, setWalletName] = useState('');
   const [initialBalance, setInitialBalance] = useState('0');
 
-  // Transfer modal state
+  // transfer modal state
   const [isOpenTransferModal, setIsOpenTransferModal] = useState(false);
   const [selectedTransferFromId, setSelectedTransferFromId] = useState<string | undefined>(undefined);
   const [deletingTransferId, setDeletingTransferId] = useState<string | null>(null);
@@ -92,7 +117,7 @@ export default function WalletManager({
     return getWalletLabel(found.type, found.name);
   };
 
-  // Calculated balances for each wallet
+  // wallet balances
   const walletStats = useMemo(() => {
     return calculateWalletBalances(wallets, incomes, expenses, transfers);
   }, [wallets, incomes, expenses, transfers]);
@@ -101,7 +126,7 @@ export default function WalletManager({
     return walletStats.reduce((sum, w) => sum + w.currentBalance, 0);
   }, [walletStats]);
 
-  // Sort transfers by date newest first
+  // sort transfers
   const sortedTransfers = useMemo(() => {
     return [...transfers].sort((a, b) => {
       const d = new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -110,18 +135,19 @@ export default function WalletManager({
     });
   }, [transfers]);
 
-  // Unused wallet types (for create modal)
+  // unused wallet types
   const unusedTypes = useMemo(() => {
     const used = wallets.map((w) => w.type);
-    return SUPPORTED_WALLET_TYPES.filter((t) => !used.includes(t.id));
+    return SUPPORTED_WALLET_TYPES.filter((t) => t.id === 'custom' || !used.includes(t.id));
   }, [wallets]);
 
   const openAddModal = () => {
     if (unusedTypes.length === 0) {
-      onShowToast('ပိုက်ဆံအိတ် အမျိုးအစား အားလုံး (၅ ခု) ထည့်သွင်းပြီးဖြစ်ပါသည်။', 'info');
+      onShowToast('ပိုက်ဆံအိတ် အမျိုးအစား အားလုံး ထည့်သွင်းပြီးဖြစ်ပါသည်။', 'info');
       return;
     }
-    setType(unusedTypes[0].id);
+    setType(unusedTypes[0]?.id || 'cash');
+    setWalletName('');
     setInitialBalance('0');
     setEditingId(null);
     setIsOpenModal(true);
@@ -129,6 +155,7 @@ export default function WalletManager({
 
   const openEditModal = (w: Wallet) => {
     setType(w.type);
+    setWalletName(w.name || '');
     setInitialBalance((w.initialBalance || 0).toString());
     setEditingId(w.id);
     setIsOpenModal(true);
@@ -148,8 +175,14 @@ export default function WalletManager({
       return;
     }
 
-    if (!editingId && wallets.some((w) => w.type === type)) {
+    if (!editingId && type !== 'custom' && wallets.some((w) => w.type === type)) {
       onShowToast('ဤပိုက်ဆံအိတ် အမျိုးအစား ထည့်သွင်းပြီးဖြစ်ပါသည်။', 'error');
+      return;
+    }
+
+    const trimmedName = type === 'custom' ? walletName.trim() : '';
+    if (type === 'custom' && !trimmedName) {
+      onShowToast('အခြား ပိုက်ဆံအိတ်အတွက် အမည်ထည့်သွင်းပေးပါ။', 'error');
       return;
     }
 
@@ -158,18 +191,19 @@ export default function WalletManager({
       if (editingId) {
         await onEditWallet(editingId, {
           initialBalance: parsedInitial,
+          ...(type === 'custom' ? { name: trimmedName } : {}),
         });
         onShowToast('ပိုက်ဆံအိတ်ကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ။', 'success');
       } else {
         await onAddWallet({
           type,
           initialBalance: parsedInitial,
+          ...(type === 'custom' ? { name: trimmedName } : {}),
         });
         onShowToast('ပိုက်ဆံအိတ်အသစ် အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ။', 'success');
       }
       setIsOpenModal(false);
-    } catch (err) {
-      console.error(err);
+    } catch {
       onShowToast('လုပ်ဆောင်မှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။', 'error');
     } finally {
       setIsSubmitting(false);
@@ -189,14 +223,12 @@ export default function WalletManager({
       await onDeleteWallet(deletingId);
       onShowToast('ပိုက်ဆံအိတ်ကို အောင်မြင်စွာ ဖျက်ပြီးပါပြီ။', 'info');
       setDeletingId(null);
-    } catch (err) {
-      console.error(err);
+    } catch {
       onShowToast('ဖျက်ပစ်ခြင်း မအောင်မြင်ပါ။', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
-
 
   const handleDeleteTransferConfirm = async () => {
     if (!deletingTransferId || !onDeleteTransfer) return;
@@ -205,8 +237,7 @@ export default function WalletManager({
       await onDeleteTransfer(deletingTransferId);
       onShowToast('ငွေလွှဲမှတ်တမ်းကို ဖျက်ပြီးပါပြီ။', 'info');
       setDeletingTransferId(null);
-    } catch (err) {
-      console.error(err);
+    } catch {
       onShowToast('ဖျက်ပစ်ခြင်း မအောင်မြင်ပါ။', 'error');
     } finally {
       setIsSubmitting(false);
@@ -215,17 +246,17 @@ export default function WalletManager({
 
   return (
     <div className="space-y-6">
-      {/* Overview Top Card */}
-      <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 text-white rounded-2xl p-5 sm:p-7 shadow-xs">
+      {/* overview card */}
+      <div className="bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white rounded-2xl p-5 sm:p-7 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-200">
+            <span className="text-xs font-semibold uppercase tracking-wider text-blue-200">
               စုစုပေါင်း ပိုက်ဆံအိတ်များ လက်ကျန်
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold mt-1 tracking-tight">
               {currencySymbol}{totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h2>
-            <p className="text-xs text-indigo-200/80 mt-1">
+            <p className="text-xs text-blue-200/80 mt-1">
               ပိုက်ဆံအိတ် {wallets.length} ခု၏ စုစုပေါင်း လက်ကျန်ငွေ
             </p>
           </div>
@@ -235,7 +266,7 @@ export default function WalletManager({
               <button
                 id="btn-transfer-top"
                 onClick={() => openTransferModal()}
-                className="flex items-center justify-center gap-2 bg-indigo-700/80 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl border border-indigo-500/30 transition-all text-sm cursor-pointer shadow-xs"
+                className="flex items-center justify-center gap-2 bg-blue-700/80 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-xl border border-blue-500/30 transition-all text-sm cursor-pointer shadow-xs"
               >
                 <ArrowRightLeft className="w-4 h-4" />
                 ငွေလွှဲမည်
@@ -246,7 +277,7 @@ export default function WalletManager({
               <button
                 id="btn-add-wallet-top"
                 onClick={openAddModal}
-                className="flex items-center justify-center gap-2 bg-white text-indigo-900 hover:bg-indigo-50 font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-all text-sm cursor-pointer"
+                className="flex items-center justify-center gap-2 bg-white text-blue-950 hover:bg-blue-50 font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-all text-sm cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 ပိုက်ဆံအိတ် အသစ်ထည့်မည်
@@ -270,7 +301,7 @@ export default function WalletManager({
                 {/* Header row: Icon, Type Name & Actions */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-blue-50 text-blue-700 border border-blue-100">
                       <IconComp className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
@@ -287,7 +318,7 @@ export default function WalletManager({
                       <button
                         onClick={() => openTransferModal(w.id)}
                         title="ဤအကောင့်မှ ငွေလွှဲမည်"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                       >
                         <ArrowRightLeft className="w-4 h-4" />
                       </button>
@@ -347,7 +378,7 @@ export default function WalletManager({
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ArrowRightLeft className="w-4 h-4 text-indigo-600" />
+              <ArrowRightLeft className="w-4 h-4 text-blue-600" />
               <h3 className="font-bold text-slate-900 text-sm">မကြာသေးမီက ငွေလွှဲမှတ်တမ်းများ</h3>
             </div>
             <span className="text-xs text-slate-400">စုစုပေါင်း {transfers.length} ခု</span>
@@ -366,7 +397,7 @@ export default function WalletManager({
                         {fromName}
                       </span>
                       <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700">
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700">
                         {toName}
                       </span>
                       <span className="text-xs text-slate-400 ml-1">• {t.date}</span>
@@ -432,7 +463,7 @@ export default function WalletManager({
                     id="select-wallet-type"
                     value={type}
                     onChange={(e) => setType(e.target.value as WalletType)}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white cursor-pointer"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
                   >
                     {unusedTypes.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -442,6 +473,25 @@ export default function WalletManager({
                   </select>
                 )}
               </div>
+
+              {/* Custom Wallet Name (only shown if type is 'custom') */}
+              {type === 'custom' && (
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                    စိတ်ကြိုက် ပိုက်ဆံအိတ် အမည် *
+                  </label>
+                  <input
+                    id="input-wallet-custom-name"
+                    type="text"
+                    required
+                    value={walletName}
+                    onChange={(e) => setWalletName(e.target.value)}
+                    placeholder="ဥပမာ - ဒေါ်လာ စုငွေစာရင်း သို့မဟုတ် Crypto"
+                    maxLength={50}
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                  />
+                </div>
+              )}
 
               {/* Initial Balance */}
               <div>
@@ -457,7 +507,7 @@ export default function WalletManager({
                   value={initialBalance}
                   onChange={(e) => setInitialBalance(e.target.value)}
                   placeholder="0"
-                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
                 />
               </div>
 
@@ -474,7 +524,7 @@ export default function WalletManager({
                   id="btn-submit-wallet"
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'သိမ်းဆည်းနေသည်...' : editingId ? 'ပြင်ဆင်မည်' : 'ထည့်သွင်းမည်'}
                 </button>

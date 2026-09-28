@@ -18,7 +18,7 @@ export default function Pagination({
 }: PaginationProps) {
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
-  // Generate page numbers with ellipsis for large page counts
+  // pagination page numbers
   const getPageNumbers = (): (number | 'ellipsis-left' | 'ellipsis-right')[] => {
     if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -92,7 +92,7 @@ export default function Pagination({
                 onClick={() => onPageChange(p)}
                 className={`min-w-8 h-8 px-2 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-xs'
+                    ? 'bg-blue-600 text-white shadow-xs'
                     : 'border border-slate-200 text-slate-700 hover:bg-slate-100'
                 }`}
               >

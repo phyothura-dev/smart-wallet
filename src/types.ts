@@ -15,17 +15,45 @@ export interface Category {
   type: CategoryType;
 }
 
-export type WalletType = 'kbz_pay' | 'wave_pay' | 'cb_pay' | 'mab_bank' | 'yoma_bank';
+export type WalletType =
+  | 'cash'
+  | 'kbz_pay'
+  | 'wave_pay'
+  | 'aya_pay'
+  | 'cb_pay'
+  | 'uab_pay'
+  | 'kbz_bank'
+  | 'aya_bank'
+  | 'cb_bank'
+  | 'uab_bank'
+  | 'yoma_bank'
+  | 'mab_bank'
+  | 'a_bank'
+  | 'mcb_bank'
+  | 'custom';
 
 export const WALLET_TYPE_LABELS: Record<WalletType, string> = {
+  cash: 'ငွေသား (Cash)',
   kbz_pay: 'KBZPay',
   wave_pay: 'WavePay',
+  aya_pay: 'AYA Pay',
   cb_pay: 'CBPay',
-  mab_bank: 'MAB Bank',
+  uab_pay: 'UAB Pay',
+  kbz_bank: 'KBZ Banking',
+  aya_bank: 'AYA Banking',
+  cb_bank: 'CB Banking',
+  uab_bank: 'UAB Banking',
   yoma_bank: 'Yoma Bank',
+  mab_bank: 'MAB Bank',
+  a_bank: 'A Bank',
+  mcb_bank: 'MCB Bank',
+  custom: 'အခြား (Custom)',
 };
 
 export function getWalletLabel(type: string, fallbackName?: string): string {
+  if (fallbackName && fallbackName.trim()) {
+    return fallbackName;
+  }
   if (type in WALLET_TYPE_LABELS) {
     return WALLET_TYPE_LABELS[type as WalletType];
   }

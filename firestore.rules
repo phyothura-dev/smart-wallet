@@ -24,13 +24,14 @@ service cloud.firestore {
         allow delete: if isOwner(userId);
       }
 
-      // Wallets collection (5 supported types, non-negative initial balance)
+      // wallets collection (supported types, non-negative initial balance)
       match /wallets/{walletId} {
         allow read: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.type in ['kbz_pay', 'wave_pay', 'cb_pay', 'mab_bank', 'yoma_bank']
+          && request.resource.data.type in ['cash', 'kbz_pay', 'wave_pay', 'aya_pay', 'cb_pay', 'uab_pay', 'kbz_bank', 'aya_bank', 'cb_bank', 'uab_bank', 'yoma_bank', 'mab_bank', 'a_bank', 'mcb_bank', 'custom']
           && request.resource.data.initialBalance is number
-          && request.resource.data.initialBalance >= 0;
+          && request.resource.data.initialBalance >= 0
+          && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 100));
         allow delete: if isOwner(userId);
       }
 

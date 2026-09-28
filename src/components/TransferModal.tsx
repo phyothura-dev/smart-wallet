@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRightLeft, X } from "lucide-react";
 import { Wallet, Transfer, getWalletLabel } from "../types";
+import { getLocalDateString } from "../utils/finance";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -24,9 +25,7 @@ export default function TransferModal({
   const [transferFrom, setTransferFrom] = useState("");
   const [transferTo, setTransferTo] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
-  const [transferDate, setTransferDate] = useState(
-    new Date().toISOString().substring(0, 10),
-  );
+  const [transferDate, setTransferDate] = useState(getLocalDateString());
   const [isTransferring, setIsTransferring] = useState(false);
 
   useEffect(() => {
@@ -36,7 +35,7 @@ export default function TransferModal({
       setTransferFrom(from);
       setTransferTo(to);
       setTransferAmount("");
-      setTransferDate(new Date().toISOString().substring(0, 10));
+      setTransferDate(getLocalDateString());
     }
   }, [isOpen, defaultFromWalletId, wallets]);
 
@@ -83,8 +82,7 @@ export default function TransferModal({
       });
       onShowToast("ငွေလွှဲပြောင်းမှု အောင်မြင်ပါသည်ခင်ဗျာ။", "success");
       onClose();
-    } catch (err) {
-      console.error(err);
+    } catch {
       onShowToast("ငွေလွှဲမှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။", "error");
     } finally {
       setIsTransferring(false);
@@ -97,10 +95,10 @@ export default function TransferModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
     >
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        {/* Header */}
+        {/* header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
               <ArrowRightLeft className="w-4 h-4" />
             </div>
             <h3 className="text-base font-bold text-slate-900">
@@ -116,9 +114,9 @@ export default function TransferModal({
           </button>
         </div>
 
-        {/* Form */}
+        {/* form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* From Wallet */}
+          {/* from wallet */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
               ငွေလွှဲမည့် အကောင့် (From) *
@@ -134,7 +132,7 @@ export default function TransferModal({
                   if (other) setTransferTo(other.id);
                 }
               }}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white cursor-pointer"
+              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
             >
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -144,7 +142,7 @@ export default function TransferModal({
             </select>
           </div>
 
-          {/* To Wallet */}
+          {/* to wallet */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
               လက်ခံမည့် အကောင့် (To) *
@@ -153,7 +151,7 @@ export default function TransferModal({
               id="select-transfer-to"
               value={transferTo}
               onChange={(e) => setTransferTo(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white cursor-pointer"
+              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
             >
               {wallets
                 .filter((w) => w.id !== transferFrom)
@@ -165,7 +163,7 @@ export default function TransferModal({
             </select>
           </div>
 
-          {/* Amount */}
+          {/* amount */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
               ငွေလွှဲပမာဏ ({currencySymbol.trim()}) *
@@ -179,11 +177,11 @@ export default function TransferModal({
               placeholder="0.00"
               value={transferAmount}
               onChange={(e) => setTransferAmount(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
             />
           </div>
 
-          {/* Date */}
+          {/* date */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
               ရက်စွဲ *
@@ -194,11 +192,11 @@ export default function TransferModal({
               required
               value={transferDate}
               onChange={(e) => setTransferDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white cursor-pointer"
+              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
             />
           </div>
 
-          {/* Buttons */}
+          {/* buttons */}
           <div className="flex gap-3 justify-end pt-3 border-t border-slate-100">
             <button
               type="button"
@@ -211,7 +209,7 @@ export default function TransferModal({
               id="btn-submit-transfer"
               type="submit"
               disabled={isTransferring}
-              className="px-5 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
             >
               <ArrowRightLeft className="w-4 h-4" />
               {isTransferring ? "လွှဲပြောင်းနေသည်..." : "ငွေလွှဲမည်"}

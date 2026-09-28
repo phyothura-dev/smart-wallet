@@ -4,15 +4,16 @@ import { auth } from './lib/firebase';
 import { useUserData } from './hooks/useUserData';
 import { usePWA } from './hooks/usePWA';
 
-// Static layout components (immediate load for fast app shell)
+// layout components
 import Auth from './components/Auth';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import { ToastContainer, Toast } from './components/Toast';
 
-import { Wallet as WalletIcon, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import { isDateInCurrentMonth } from './utils/finance';
 
-// Lazy-loaded view components (code-split for optimal bundle performance)
+// lazy view components
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const IncomeManager = lazy(() => import('./components/IncomeManager'));
 const ExpenseManager = lazy(() => import('./components/ExpenseManager'));
@@ -24,25 +25,25 @@ const ProfileManager = lazy(() => import('./components/ProfileManager'));
 function ViewLoadingSpinner() {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-slate-500">
-      <RefreshCw className="w-6 h-6 animate-spin text-indigo-600 mb-2" />
+      <RefreshCw className="w-6 h-6 animate-spin text-blue-600 mb-2" />
       <p className="text-xs font-semibold">စာမျက်နှာ ဖွင့်နေပါသည်...</p>
     </div>
   );
 }
 
 export default function App() {
-  // Auth state
+  // auth state
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Navigation & Layout
+  // navigation state
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Progressive Web App (PWA) controller
+  // pwa state
   const { isInstallable, isOnline, isUpdateAvailable, installApp, updateApp } = usePWA();
 
-  // Notification Toast state
+  // toast state
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const handleShowToast = useCallback(
@@ -60,7 +61,7 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Auth state subscription with proper cleanup
+  // auth listener
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -70,7 +71,7 @@ export default function App() {
     return () => unsubAuth();
   }, []);
 
-  // Hook managing all Firestore real-time subscriptions and CRUD operations
+  // user data hook
   const {
     profile,
     categories,
@@ -102,37 +103,40 @@ export default function App() {
       await signOut(auth);
       handleShowToast('အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ။', 'info');
       setCurrentTab('dashboard');
-    } catch (err) {
-      console.error(err);
+    } catch {
       handleShowToast('အကောင့်မှ ထွက်ခြင်း မအောင်မြင်ပါ။ ထပ်မံကြိုးစားကြည့်ပါ။', 'error');
     }
   };
 
-  // Compute total income achieved for the current month
-  const totalIncomeForCurrentMonth = useMemo(() => {
-    const now = new Date();
-    const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; // "YYYY-MM"
-    return incomes
-      .filter((inc) => inc.date.startsWith(currentYearMonth))
-      .reduce((sum, item) => sum + item.amount, 0);
-  }, [incomes]);
+  // current month income and expense
+  const currentMonthTotals = useMemo(() => {
+    const income = incomes
+      .filter((inc) => isDateInCurrentMonth(inc.date))
+      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+    const expense = expenses
+      .filter((exp) => isDateInCurrentMonth(exp.date))
+      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+    return { income, expense };
+  }, [incomes, expenses]);
 
-  // Loading indicator for Auth state
+  // auth loading
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-150 mb-4 animate-bounce">
-          <WalletIcon className="w-6 h-6" />
-        </div>
+        <img
+          src="/logo.png"
+          alt="SmartWallet"
+          className="h-14 w-14 object-contain mb-4 animate-bounce drop-shadow-sm rounded-2xl"
+        />
         <div className="flex items-center gap-2 text-slate-600 text-sm font-semibold">
-          <RefreshCw className="w-4 h-4 animate-spin text-indigo-600" />
+          <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
           Loading secure session...
         </div>
       </div>
     );
   }
 
-  // Unauthenticated layout
+  // unauthenticated view
   if (!user) {
     return (
       <>
@@ -142,15 +146,17 @@ export default function App() {
     );
   }
 
-  // Firestore Error troubleshooter
+  // database error view
   if (dbError) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 md:p-12">
         <div className="max-w-2xl w-full bg-white rounded-2xl border border-slate-200 p-8 shadow-xs space-y-6">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
-              <WalletIcon className="w-5 h-5" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="SmartWallet"
+              className="h-10 w-10 object-contain rounded-xl"
+            />
             <div>
               <h2 className="text-lg font-bold text-slate-900">Database Connection Trouble</h2>
               <p className="text-xs text-slate-500 font-medium">FinTrack secure synchronization could not be established</p>
@@ -180,7 +186,7 @@ export default function App() {
                 <div>
                   <p className="font-semibold text-slate-900">Create the Cloud Firestore Database</p>
                   <p className="text-slate-500 mt-0.5">
-                    If this is a brand new Firebase project, Firestore might not be initialized yet. Go to your <a href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/firestore`} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-semibold">Firebase Console &gt; Build &gt; Firestore Database</a> and click <strong>Create database</strong>. Choose Native Mode and your preferred region.
+                    If this is a brand new Firebase project, Firestore might not be initialized yet. Go to your <a href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/firestore`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">Firebase Console &gt; Build &gt; Firestore Database</a> and click <strong>Create database</strong>. Choose Native Mode and your preferred region.
                   </p>
                 </div>
               </div>
@@ -190,7 +196,7 @@ export default function App() {
                 <div>
                   <p className="font-semibold text-slate-900">Deploy Firestore Security Rules</p>
                   <p className="text-slate-500 mt-0.5">
-                    If you get a <code>permission-denied</code> error, your Firestore Rules are likely blocking read/write operations. In the <a href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/firestore/rules`} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline font-semibold">Rules tab</a> of your database, deploy standard rules.
+                    If you get a <code>permission-denied</code> error, your Firestore Rules are likely blocking read/write operations. In the <a href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/firestore/rules`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">Rules tab</a> of your database, deploy standard rules.
                   </p>
                 </div>
               </div>
@@ -210,7 +216,7 @@ export default function App() {
           <div className="flex gap-3 pt-4 border-t border-slate-100">
             <button
               onClick={() => window.location.reload()}
-              className="flex-1 flex justify-center py-2 px-4 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors cursor-pointer"
+              className="flex-1 flex justify-center py-2 px-4 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer"
             >
               ပြန်လည်ချိတ်ဆက်မည်
             </button>
@@ -226,15 +232,17 @@ export default function App() {
     );
   }
 
-  // Data Synchronizer spinner
+  // data loading spinner
   if (dataLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-150 mb-4 animate-pulse">
-          <WalletIcon className="w-6 h-6" />
-        </div>
+        <img
+          src="/logo.png"
+          alt="SmartWallet"
+          className="h-14 w-14 object-contain mb-4 animate-pulse drop-shadow-sm rounded-2xl"
+        />
         <div className="flex items-center gap-2 text-slate-600 text-sm font-semibold">
-          <RefreshCw className="w-4 h-4 animate-spin text-indigo-600" />
+          <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
           အချက်အလက်များကို ချိတ်ဆက်ရယူနေပါသည်...
         </div>
       </div>
@@ -264,7 +272,8 @@ export default function App() {
           currentTab={currentTab}
           profile={profile}
           onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
-          totalIncomeForMonth={totalIncomeForCurrentMonth}
+          totalIncomeForMonth={currentMonthTotals.income}
+          totalExpenseForMonth={currentMonthTotals.expense}
           isInstallable={isInstallable}
           onInstallApp={installApp}
           isOnline={isOnline}
@@ -347,6 +356,7 @@ export default function App() {
                   categories={categories}
                   wallets={wallets}
                   profile={profile}
+                  onShowToast={handleShowToast}
                 />
               )}
 

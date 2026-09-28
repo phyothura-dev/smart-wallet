@@ -53,16 +53,16 @@ export default function Dashboard({
 }: DashboardProps) {
   const currencySymbol = 'Ks ';
 
-  // Time-frame filter state
+  // time frame filter state
   const [timeFrame, setTimeFrame] = useState<TimeFrame>('this_month');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
 
-  // Quick Transfer Modal State
+  // quick transfer modal state
   const [isOpenTransferModal, setIsOpenTransferModal] = useState(false);
   const [selectedFromWalletId, setSelectedFromWalletId] = useState<string | undefined>(undefined);
 
-  // 1. Calculate effective date range based on selected timeFrame
+  // date range filter
   const dateRange = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -92,7 +92,7 @@ export default function Dashboard({
     return { start: '', end: '', label: 'ကာလအားလုံး' };
   }, [timeFrame, customStart, customEnd]);
 
-  // 2. Filter incomes & expenses by selected timeFrame
+  // filtered incomes and expenses
   const periodData = useMemo(() => {
     const filteredIncomes = incomes.filter((inc) => {
       if (dateRange.start && inc.date < dateRange.start) return false;
@@ -119,7 +119,7 @@ export default function Dashboard({
     };
   }, [incomes, expenses, dateRange]);
 
-  // 3. Calculate live balances for all wallets
+  // wallet balances
   const walletBalances = useMemo(() => {
     return calculateWalletBalances(wallets, incomes, expenses, transfers);
   }, [wallets, incomes, expenses, transfers]);
@@ -129,7 +129,7 @@ export default function Dashboard({
     setIsOpenTransferModal(true);
   };
 
-  // 4. Total Net Worth / Assets across all wallets
+  // total net assets
   const totalAssets = useMemo(() => {
     if (walletBalances.length > 0) {
       return walletBalances.reduce((sum, w) => sum + w.currentBalance, 0);
@@ -139,7 +139,7 @@ export default function Dashboard({
     return allInc - allExp;
   }, [walletBalances, incomes, expenses]);
 
-  // 5. Recent Transactions (Newest 5)
+  // recent transactions
   const recentTransactions = useMemo(() => {
     const combined: Transaction[] = [
       ...incomes.map((inc) => ({ ...inc, type: 'income' as const })),
@@ -154,7 +154,7 @@ export default function Dashboard({
       .slice(0, 5);
   }, [incomes, expenses]);
 
-  // 6. Month grouping for Bar Chart (Last 6 months)
+  // monthly bar chart data
   const monthlyChartData = useMemo(() => {
     const months = [
       'ဇန်နဝါရီ', 'ဖေဖော်ဝါရီ', 'မတ်',
@@ -196,7 +196,7 @@ export default function Dashboard({
     return Object.values(chartDataMap).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
   }, [incomes, expenses]);
 
-  // 7. Expense by Category for Pie Chart (Filtered by selected TimeFrame!)
+  // expense category pie chart data
   const categoryChartData = useMemo(() => {
     const categoryTotals: { [key: string]: number } = {};
     periodData.filteredExpenses.forEach((exp) => {
@@ -215,7 +215,7 @@ export default function Dashboard({
     return data.sort((a, b) => b.value - a.value);
   }, [periodData.filteredExpenses]);
 
-  const COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6'];
+  const COLORS = ['#2563eb', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6'];
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -237,7 +237,7 @@ export default function Dashboard({
                 onClick={() => setTimeFrame(tf.id as TimeFrame)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-xs font-bold'
+                    ? 'bg-blue-600 text-white shadow-xs font-bold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
@@ -273,7 +273,7 @@ export default function Dashboard({
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
                 <WalletCards className="w-4 h-4" />
               </div>
               <h3 className="font-bold text-slate-900 text-sm">ပိုက်ဆံအိတ်များ</h3>
@@ -283,7 +283,7 @@ export default function Dashboard({
               {wallets.length >= 2 && onAddTransfer && (
                 <button
                   onClick={() => openTransferModal()}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition-colors"
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors"
                 >
                   <ArrowRightLeft className="w-3.5 h-3.5" /> ငွေလွှဲမည်
                 </button>
@@ -308,7 +308,7 @@ export default function Dashboard({
                   className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 hover:border-slate-200 transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-indigo-600 flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-blue-600 flex-shrink-0">
                       <WIcon className="w-4 h-4" />
                     </div>
                     <p className="font-semibold text-xs text-slate-900 truncate">{w.displayName}</p>
@@ -334,7 +334,7 @@ export default function Dashboard({
               စုစုပေါင်း လက်ကျန်ငွေ
             </span>
             <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-              totalAssets >= 0 ? 'bg-indigo-50 text-indigo-600' : 'bg-rose-50 text-rose-600'
+              totalAssets >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600'
             }`}>
               <DollarSign className="h-4.5 w-4.5" />
             </div>
@@ -396,7 +396,7 @@ export default function Dashboard({
             <h4 className="font-semibold text-slate-900 text-sm">လအလိုက် ဝင်ငွေ/ထွက်ငွေ နှိုင်းယှဉ်ချက် (၆ လ)</h4>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 bg-[#4F46E5] rounded-sm" />
+                <div className="w-2.5 h-2.5 bg-[#2563EB] rounded-sm" />
                 <span className="text-slate-600 font-medium">ဝင်ငွေ</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -422,7 +422,7 @@ export default function Dashboard({
                     contentStyle={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: 'none', fontSize: '12px' }}
                     formatter={(value: number) => [`${currencySymbol}${value.toLocaleString()}`, '']}
                   />
-                  <Bar dataKey="income" fill="#4F46E5" radius={[3, 3, 0, 0]} barSize={12} />
+                  <Bar dataKey="income" fill="#2563EB" radius={[3, 3, 0, 0]} barSize={12} />
                   <Bar dataKey="expense" fill="#DC2626" radius={[3, 3, 0, 0]} barSize={12} />
                 </BarChart>
               </ResponsiveContainer>
@@ -505,7 +505,7 @@ export default function Dashboard({
           <button
             id="dash-btn-view-all-tx"
             onClick={() => onChangeTab('transactions')}
-            className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer min-h-[36px]"
+            className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline cursor-pointer min-h-[36px]"
           >
             မှတ်တမ်းအားလုံးကြည့်မည် <ArrowRight className="h-3.5 w-3.5" />
           </button>

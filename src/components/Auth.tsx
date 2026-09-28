@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { seedNewUserData } from '../lib/seedData';
-import { Wallet, Mail, Lock, User, RefreshCw, Eye, EyeOff, CheckCircle, Chrome } from 'lucide-react';
+import { Mail, Lock, User, RefreshCw, Eye, EyeOff, CheckCircle, Chrome } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface AuthProps {
@@ -47,7 +47,6 @@ export default function Auth({ onShowToast }: AuthProps) {
       await signInWithEmailAndPassword(auth, email, password);
       onShowToast('ပြန်လည်ကြိုဆိုပါသည်!', 'success');
     } catch (err: any) {
-      console.error(err);
       let errMsg = 'အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။';
       if (err.code === 'auth/invalid-credential') {
         errMsg = 'အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။';
@@ -85,12 +84,12 @@ export default function Auth({ onShowToast }: AuthProps) {
 
     setLoading(true);
     try {
-      // 1. Create firebase user
+      // create firebase user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Setup user profile, default categories, and default wallets atomically
-      const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fullName)}`;
+      // setup initial user data
+      const avatarUrl = `https://api.dicebear.com/10.x/micah/svg?seed=${encodeURIComponent(fullName)}`;
       await seedNewUserData(user.uid, {
         fullName,
         email,
@@ -100,7 +99,6 @@ export default function Auth({ onShowToast }: AuthProps) {
 
       onShowToast('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ ကြိုဆိုပါသည်!', 'success');
     } catch (err: any) {
-      console.error(err);
       let errMsg = 'အကောင့်ဖွင့်ရာတွင် အမှားဖြစ်ပေါ်ခဲ့ပါသည်။';
       if (err.code === 'auth/email-already-in-use') {
         errMsg = 'ဤအီးမေးလ်ဖြင့် အကောင့်ဖွင့်ပြီးသားဖြစ်ပါသည်။';
@@ -126,7 +124,6 @@ export default function Auth({ onShowToast }: AuthProps) {
       await signInWithPopup(auth, provider);
       onShowToast('ပြန်လည်ကြိုဆိုပါသည်!', 'success');
     } catch (err: any) {
-      console.error(err);
       let errMsg = `Google အကောင့်ဖြင့် ဝင်ရောက်ခြင်း မအောင်မြင်ပါ (${err.message || 'အမှားဖြစ်ပေါ်ခဲ့ပါသည်'})`;
       if (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain'))) {
         errMsg = "Unauthorized Domain: This hosting domain is not authorized in your Firebase Console.";
@@ -154,8 +151,7 @@ export default function Auth({ onShowToast }: AuthProps) {
       await sendPasswordResetEmail(auth, email);
       setForgotSent(true);
       onShowToast('စကားဝှက်ပြန်လည်သတ်မှတ်ရန် လင့်ခ်ကို အီးမေးလ်သို့ ပေးပို့ပြီးပါပြီ။', 'success');
-    } catch (err: any) {
-      console.error(err);
+    } catch {
       onShowToast('စကားဝှက်ပြန်လည်သတ်မှတ်ခြင်း မအောင်မြင်ပါ။', 'error');
     } finally {
       setLoading(false);
@@ -165,9 +161,11 @@ export default function Auth({ onShowToast }: AuthProps) {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
-        <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-[#4F46E5] text-white shadow-xs mb-5 ">
-          <Wallet className="w-6 h-6" />
-        </div>
+        <img
+          src="/logo.png"
+          alt="SmartWallet"
+          className="h-16 w-16 object-contain mb-4 drop-shadow-sm rounded-2xl"
+        />
         <h2 className="text-center text-2xl font-bold tracking-tight text-[#111827] font-sans">
           {mode === 'signin' && 'အကောင့်ဝင်ရောက်ပါ'}
           {mode === 'signup' && 'အကောင့်အသစ်ဖွင့်ပါ'}
@@ -183,7 +181,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                   setMode('signup');
                   setForgotSent(false);
                 }}
-                className="font-semibold text-[#4F46E5] hover:text-[#4338CA] transition-colors cursor-pointer"
+                className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors cursor-pointer"
               >
                 အကောင့်အသစ်ဖွင့်မည်
               </button>
@@ -195,7 +193,7 @@ export default function Auth({ onShowToast }: AuthProps) {
               <button
                 id="link-to-signin"
                 onClick={() => setMode('signin')}
-                className="font-semibold text-[#4F46E5] hover:text-[#4338CA] transition-colors cursor-pointer"
+                className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors cursor-pointer"
               >
                 အကောင့်ဝင်ပါ
               </button>
@@ -208,7 +206,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                 setMode('signin');
                 setForgotSent(false);
               }}
-              className="font-semibold text-[#4F46E5] hover:text-[#4338CA] transition-colors cursor-pointer"
+              className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors cursor-pointer"
             >
               အကောင့်ဝင်ရန် ပြန်သွားမည်
             </button>
@@ -312,7 +310,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                       placeholder="ဦးမောင်မောင်"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-sm focus:ring-1 focus:ring-indigo-500 bg-white transition-colors"
+                      className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
                     />
                   </div>
                 </div>
@@ -335,7 +333,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-sm focus:ring-1 focus:ring-indigo-500 bg-white transition-colors"
+                    className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
                   />
                 </div>
               </div>
@@ -358,7 +356,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-sm focus:ring-1 focus:ring-indigo-500 bg-white transition-colors"
+                      className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
                     />
                     <button
                       id="toggle-show-password"
@@ -382,7 +380,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                         setMode('forgot');
                         setForgotSent(false);
                       }}
-                      className="font-medium text-[#4F46E5] hover:text-[#4338CA] transition-colors cursor-pointer"
+                      className="font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors cursor-pointer"
                     >
                       စကားဝှက် မေ့နေပါသလား?
                     </button>
@@ -395,7 +393,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                   id="btn-submit-auth"
                   type="submit"
                   disabled={loading}
-                  className="w-full flex justify-center py-2 px-4 rounded-lg text-sm font-medium text-white bg-[#4F46E5] hover:bg-[#4338CA] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  className="w-full flex justify-center py-2 px-4 rounded-lg text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   {loading ? (
                     <RefreshCw className="w-5 h-5 animate-spin" />
@@ -427,7 +425,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                     onClick={handleGoogleSignIn}
                     className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none disabled:opacity-50 transition-colors cursor-pointer"
                   >
-                    <Chrome className="w-4 h-4 text-[#4F46E5]" />
+                    <Chrome className="w-4 h-4 text-[#2563EB]" />
                     Google ဖြင့် ဝင်ရောက်မည်
                   </button>
                 </>

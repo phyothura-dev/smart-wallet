@@ -13,17 +13,17 @@ export const DEFAULT_CATEGORIES = [
 ];
 
 export const DEFAULT_WALLETS = [
+  { type: 'cash' as const, initialBalance: 0 },
   { type: 'kbz_pay' as const, initialBalance: 0 },
   { type: 'wave_pay' as const, initialBalance: 0 },
+  { type: 'aya_pay' as const, initialBalance: 0 },
   { type: 'cb_pay' as const, initialBalance: 0 },
-  { type: 'mab_bank' as const, initialBalance: 0 },
+  { type: 'uab_pay' as const, initialBalance: 0 },
+  { type: 'kbz_bank' as const, initialBalance: 0 },
   { type: 'yoma_bank' as const, initialBalance: 0 },
 ];
 
-/**
- * Initializes a new user's profile, categories, and standard wallets
- * atomically in a single writeBatch roundtrip.
- */
+// seed initial user data
 export async function seedNewUserData(
   userId: string,
   profileData?: {
@@ -36,13 +36,13 @@ export async function seedNewUserData(
   const batch = writeBatch(db);
   const now = new Date().toISOString();
 
-  // 1. Profile document
+  // setup profile
   const userRef = doc(db, 'users', userId);
   const fullName = profileData?.fullName || 'Finance Member';
   const email = profileData?.email || '';
   const photoURL =
     profileData?.photoURL ||
-    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(email || fullName || 'User')}`;
+    `https://api.dicebear.com/10.x/micah/svg?seed=${encodeURIComponent(email || fullName || 'User')}`;
   const currency = profileData?.currency || 'Ks';
 
   batch.set(
@@ -57,7 +57,7 @@ export async function seedNewUserData(
     { merge: true }
   );
 
-  // 2. Default categories
+  // default categories
   for (const cat of DEFAULT_CATEGORIES) {
     const catId = cat.name.toLowerCase().replace(/\s+/g, '-');
     const catRef = doc(db, 'users', userId, 'categories', catId);
@@ -67,9 +67,8 @@ export async function seedNewUserData(
     });
   }
 
-  // 3. Default wallets
+  // default wallets
   for (const w of DEFAULT_WALLETS) {
-    // Deterministic doc ID so it cannot be duplicated even if called twice
     const walletRef = doc(db, 'users', userId, 'wallets', w.type);
     batch.set(walletRef, {
       type: w.type,
@@ -78,6 +77,6 @@ export async function seedNewUserData(
     });
   }
 
-  // Commit everything in one atomic network request
+  // commit batch
   await batch.commit();
 }

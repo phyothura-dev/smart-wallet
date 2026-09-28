@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowUpRight, ArrowDownRight, FolderTree, ArrowLeftRight, UserCircle, LogOut, Wallet, WalletCards, X, Download } from 'lucide-react';
+import { LayoutDashboard, ArrowUpRight, ArrowDownRight, FolderTree, ArrowLeftRight, UserCircle, LogOut, WalletCards, X, Download } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface SidebarProps {
@@ -58,14 +58,16 @@ export default function Sidebar({
         {/* Header/Logo */}
         <div id="sidebar-header" className="flex h-16 items-center justify-between px-5 sm:px-6 border-b border-slate-200 bg-white">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-sm shadow-indigo-500/25">
-              <Wallet className="h-5 w-5 stroke-[2.2]" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="SmartWallet"
+              className="h-9 w-9 rounded-xl object-contain shadow-xs border border-blue-100/60"
+            />
             <div className="flex flex-col">
               <span className="text-[17px] font-bold text-slate-900 tracking-tight leading-tight font-sans">
                 SmartWallet
               </span>
-              <span className="text-[10px] font-semibold text-indigo-600 tracking-wide uppercase">
+              <span className="text-[10px] font-semibold text-blue-600 tracking-wide uppercase">
                 Finance Hub
               </span>
             </div>
@@ -94,12 +96,12 @@ export default function Sidebar({
                 onClick={() => handleTabClick(item.id)}
                 className={`flex w-full min-h-[44px] items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${
                   isActive
-                    ? 'bg-[#F3F4F6] text-[#4F46E5] font-semibold'
+                    ? 'bg-[#F3F4F6] text-[#2563EB] font-semibold'
                     : 'text-[#4B5563] hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
                 <IconComponent
-                  className={`h-5 w-5 ${isActive ? 'text-[#4F46E5]' : 'text-slate-400'}`}
+                  className={`h-5 w-5 ${isActive ? 'text-[#2563EB]' : 'text-slate-400'}`}
                 />
                 {item.label}
               </button>
@@ -112,10 +114,14 @@ export default function Sidebar({
           <div className="flex items-center gap-3">
             <img
               id="sidebar-user-avatar"
-              src={profile?.photoURL || 'https://api.dicebear.com/7.x/initials/svg?seed=User'}
+              src={
+                profile?.photoURL
+                  ? profile.photoURL.replace(/api\.dicebear\.com\/(7\.x|9\.x)\/(adventurer|initials)\/svg/, 'api.dicebear.com/10.x/micah/svg')
+                  : `https://api.dicebear.com/10.x/micah/svg?seed=${encodeURIComponent(profile?.fullName || 'User')}`
+              }
               referrerPolicy="no-referrer"
               alt="Profile"
-              className="h-9 w-9 rounded-full border border-slate-200 object-cover flex-shrink-0"
+              className="h-9 w-9 rounded-full border border-slate-200 bg-slate-50 object-cover flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
               <p className="truncate text-sm font-semibold text-slate-900">
@@ -135,9 +141,9 @@ export default function Sidebar({
                 onInstallApp();
                 onCloseMobile();
               }}
-              className="mt-3 flex w-full min-h-[44px] items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#4F46E5] bg-indigo-50 hover:bg-indigo-100 transition-colors cursor-pointer border border-indigo-100"
+              className="mt-3 flex w-full min-h-[44px] items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#2563EB] bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer border border-blue-100"
             >
-              <Download className="h-5 w-5 text-[#4F46E5] flex-shrink-0" />
+              <Download className="h-5 w-5 text-[#2563EB] flex-shrink-0" />
               App သွင်းမည် (PWA)
             </button>
           )}

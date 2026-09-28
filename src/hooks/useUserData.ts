@@ -69,7 +69,7 @@ export function useUserData(user: User | null) {
 
     const unsubs: Unsubscribe[] = [];
 
-    // 1. Profile listener
+    // profile listener
     const unsubProfile = onSnapshot(
       doc(db, 'users', user.uid),
       async (docSnap) => {
@@ -82,10 +82,13 @@ export function useUserData(user: User | null) {
               fullName: data.fullName || 'User',
               photoURL: data.photoURL || '',
               currency: data.currency || 'Ks',
-              monthlyIncomeGoal: data.monthlyIncomeGoal !== undefined ? data.monthlyIncomeGoal : null,
+              monthlyIncomeGoal:
+                data.monthlyIncomeGoal !== undefined && data.monthlyIncomeGoal !== null
+                  ? Number(data.monthlyIncomeGoal)
+                  : null,
             });
           } else {
-            // New user without profile: seed initial data atomically
+            // seed profile if missing
             await seedNewUserData(user.uid, {
               fullName: user.displayName || 'Finance Member',
               email: user.email || '',
@@ -103,7 +106,6 @@ export function useUserData(user: User | null) {
         }
       },
       (err) => {
-        console.error('Firestore listener error for profile:', err);
         setDbError({
           message: err instanceof Error ? err.message : String(err),
           code: (err as any).code || 'unknown',
@@ -114,7 +116,7 @@ export function useUserData(user: User | null) {
     );
     unsubs.push(unsubProfile);
 
-    // 2. Categories listener
+    // categories listener
     const unsubCategories = onSnapshot(
       collection(db, 'users', user.uid, 'categories'),
       (snapshot) => {
@@ -135,7 +137,6 @@ export function useUserData(user: User | null) {
         }
       },
       (err) => {
-        console.error('Firestore listener error for categories:', err);
         setDbError({
           message: err instanceof Error ? err.message : String(err),
           code: (err as any).code || 'unknown',
@@ -146,7 +147,7 @@ export function useUserData(user: User | null) {
     );
     unsubs.push(unsubCategories);
 
-    // 3. Wallets listener
+    // wallets listener
     const unsubWallets = onSnapshot(
       collection(db, 'users', user.uid, 'wallets'),
       async (snapshot) => {
@@ -156,7 +157,7 @@ export function useUserData(user: User | null) {
           list.push({
             id: docSnap.id,
             type: (data.type as any) || 'kbz_pay',
-            initialBalance: data.initialBalance || 0,
+            initialBalance: Number(data.initialBalance) || 0,
             name: data.name,
             createdAt: data.createdAt || '',
           });
@@ -169,7 +170,6 @@ export function useUserData(user: User | null) {
         }
       },
       (err) => {
-        console.error('Firestore listener error for wallets:', err);
         setDbError({
           message: err instanceof Error ? err.message : String(err),
           code: (err as any).code || 'unknown',
@@ -180,7 +180,7 @@ export function useUserData(user: User | null) {
     );
     unsubs.push(unsubWallets);
 
-    // 4. Incomes listener
+    // incomes listener
     const unsubIncomes = onSnapshot(
       collection(db, 'users', user.uid, 'incomes'),
       (snapshot) => {
@@ -190,7 +190,7 @@ export function useUserData(user: User | null) {
           list.push({
             id: docSnap.id,
             title: data.title || '',
-            amount: data.amount || 0,
+            amount: Number(data.amount) || 0,
             category: data.category || '',
             date: data.date || '',
             walletId: data.walletId,
@@ -206,7 +206,6 @@ export function useUserData(user: User | null) {
         }
       },
       (err) => {
-        console.error('Firestore listener error for incomes:', err);
         setDbError({
           message: err instanceof Error ? err.message : String(err),
           code: (err as any).code || 'unknown',
@@ -217,7 +216,7 @@ export function useUserData(user: User | null) {
     );
     unsubs.push(unsubIncomes);
 
-    // 5. Expenses listener
+    // expenses listener
     const unsubExpenses = onSnapshot(
       collection(db, 'users', user.uid, 'expenses'),
       (snapshot) => {
@@ -227,7 +226,7 @@ export function useUserData(user: User | null) {
           list.push({
             id: docSnap.id,
             title: data.title || '',
-            amount: data.amount || 0,
+            amount: Number(data.amount) || 0,
             category: data.category || '',
             date: data.date || '',
             walletId: data.walletId,
@@ -243,7 +242,6 @@ export function useUserData(user: User | null) {
         }
       },
       (err) => {
-        console.error('Firestore listener error for expenses:', err);
         setDbError({
           message: err instanceof Error ? err.message : String(err),
           code: (err as any).code || 'unknown',
@@ -254,7 +252,7 @@ export function useUserData(user: User | null) {
     );
     unsubs.push(unsubExpenses);
 
-    // 6. Transfers listener
+    // transfers listener
     const unsubTransfers = onSnapshot(
       collection(db, 'users', user.uid, 'transfers'),
       (snapshot) => {
@@ -265,7 +263,7 @@ export function useUserData(user: User | null) {
             id: docSnap.id,
             fromWalletId: data.fromWalletId || '',
             toWalletId: data.toWalletId || '',
-            amount: data.amount || 0,
+            amount: Number(data.amount) || 0,
             date: data.date || '',
             createdAt: data.createdAt || '',
           });
@@ -278,7 +276,6 @@ export function useUserData(user: User | null) {
         }
       },
       (err) => {
-        console.error('Firestore listener error for transfers:', err);
         setDbError({
           message: err instanceof Error ? err.message : String(err),
           code: (err as any).code || 'unknown',
@@ -289,13 +286,13 @@ export function useUserData(user: User | null) {
     );
     unsubs.push(unsubTransfers);
 
-    // Deterministic cleanup: unsubscribe all listeners when user changes or component unmounts
+    // cleanup listeners
     return () => {
       unsubs.forEach((unsub) => unsub());
     };
   }, [user]);
 
-  // CRUD Operations
+  // crud operations
   const handleAddIncome = useCallback(
     async (data: Omit<Income, 'id' | 'createdAt'>) => {
       if (!user) return;

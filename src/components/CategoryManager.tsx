@@ -17,22 +17,22 @@ export default function CategoryManager({
   onDeleteCategory,
   onShowToast,
 }: CategoryManagerProps) {
-  // Tabs: 'income' or 'expense'
+  // tab state
   const [activeType, setActiveType] = useState<CategoryType>('income');
   
-  // New category name state
+  // new category state
   const [newCatName, setNewCatName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
-  // Editing state
+  // edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  // Deleting confirmation state
+  // delete confirmation state
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Filtered categories
+  // filtered categories
   const filteredCategories = categories.filter((cat) => cat.type === activeType);
 
   const getTypeName = (type: CategoryType) => {
@@ -46,7 +46,7 @@ export default function CategoryManager({
       return;
     }
 
-    // Check if duplicate name in active type
+    // check duplicate name
     const duplicate = categories.some(
       (cat) => cat.type === activeType && cat.name.toLowerCase() === newCatName.trim().toLowerCase()
     );
@@ -60,8 +60,7 @@ export default function CategoryManager({
       await onAddCategory(newCatName.trim(), activeType);
       onShowToast(`"${newCatName.trim()}" ခေါင်းစဉ်အုပ်စု ထည့်သွင်းပြီးပါပြီ။`, 'success');
       setNewCatName('');
-    } catch (err) {
-      console.error(err);
+    } catch {
       onShowToast('ခေါင်းစဉ်အုပ်စု ထည့်သွင်းခြင်း မအောင်မြင်ပါ။', 'error');
     } finally {
       setIsAdding(false);
@@ -79,7 +78,7 @@ export default function CategoryManager({
       return;
     }
 
-    // Check duplicate
+    // check duplicate
     const duplicate = categories.some(
       (cat) => cat.id !== id && cat.type === activeType && cat.name.toLowerCase() === editingName.trim().toLowerCase()
     );
@@ -93,8 +92,7 @@ export default function CategoryManager({
       await onRenameCategory(id, editingName.trim());
       onShowToast('ခေါင်းစဉ်အုပ်စု အမည် ပြင်ဆင်ပြီးပါပြီ။', 'success');
       setEditingId(null);
-    } catch (err) {
-      console.error(err);
+    } catch {
       onShowToast('အမည်ပြင်ဆင်ခြင်း မအောင်မြင်ပါ။', 'error');
     } finally {
       setIsSavingEdit(false);
@@ -105,8 +103,7 @@ export default function CategoryManager({
     try {
       await onDeleteCategory(id);
       onShowToast('ခေါင်းစဉ်အုပ်စု ဖျက်ပြီးပါပြီ။', 'success');
-    } catch (err) {
-      console.error(err);
+    } catch {
       onShowToast('ခေါင်းစဉ်အုပ်စု ဖျက်ခြင်း မအောင်မြင်ပါ။', 'error');
     } finally {
       setDeletingId(null);
@@ -115,10 +112,10 @@ export default function CategoryManager({
 
   return (
     <div className="space-y-6">
-      {/* Main card */}
+      {/* main card */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden p-4 sm:p-6">
 
-        {/* Toggle tabs */}
+        {/* toggle tabs */}
         <div className="flex border-b border-slate-200 mb-6">
           <button
             id="tab-income-categories"
@@ -128,7 +125,7 @@ export default function CategoryManager({
             }}
             className={`flex-1 sm:flex-initial pb-3 text-xs sm:text-sm font-medium border-b-2 px-3 sm:px-4 transition-all cursor-pointer text-center min-h-[40px] flex items-center justify-center ${
               activeType === 'income'
-                ? 'border-[#4F46E5] text-[#4F46E5] font-semibold'
+                ? 'border-[#2563EB] text-[#2563EB] font-semibold'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -142,7 +139,7 @@ export default function CategoryManager({
             }}
             className={`flex-1 sm:flex-initial pb-3 text-xs sm:text-sm font-medium border-b-2 px-3 sm:px-4 transition-all cursor-pointer text-center min-h-[40px] flex items-center justify-center ${
               activeType === 'expense'
-                ? 'border-[#4F46E5] text-[#4F46E5] font-semibold'
+                ? 'border-[#2563EB] text-[#2563EB] font-semibold'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -159,13 +156,13 @@ export default function CategoryManager({
             placeholder={`အသစ်ထည့်မည့် ${getTypeName(activeType)} ခေါင်းစဉ်အုပ်စု`}
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
-            className="flex-1 px-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-base sm:text-sm focus:ring-1 focus:ring-indigo-500 bg-white transition-colors min-h-[42px] sm:min-h-0"
+            className="flex-1 px-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors min-h-[42px] sm:min-h-0"
           />
           <button
             id="btn-add-category"
             type="submit"
             disabled={isAdding}
-            className="rounded-lg bg-[#4F46E5] px-4 py-2.5 sm:py-2 text-sm font-medium text-white hover:bg-[#4338CA] transition-colors focus:outline-none flex-shrink-0 cursor-pointer min-h-[42px] sm:min-h-0 flex items-center justify-center"
+            className="rounded-lg bg-[#2563EB] px-4 py-2.5 sm:py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors focus:outline-none flex-shrink-0 cursor-pointer min-h-[42px] sm:min-h-0 flex items-center justify-center"
           >
             {isAdding ? 'ထည့်နေသည်...' : 'ထည့်မည်'}
           </button>
@@ -196,7 +193,7 @@ export default function CategoryManager({
                         required
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
-                        className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 text-sm sm:text-xs focus:ring-1 focus:ring-indigo-500 min-h-[38px] sm:min-h-0"
+                        className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 text-sm sm:text-xs focus:ring-1 focus:ring-blue-500 min-h-[38px] sm:min-h-0"
                       />
                       <button
                         id={`btn-save-rename-${cat.id}`}
