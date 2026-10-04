@@ -129,7 +129,7 @@ export default function CategoryManager({
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >
-            ဝင်ငွေ ခေါင်းစဉ်များ
+            ဝင်ငွေ
           </button>
           <button
             id="tab-expense-categories"
@@ -143,7 +143,7 @@ export default function CategoryManager({
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
           >
-            ထွက်ငွေ ခေါင်းစဉ်များ
+            ထွက်ငွေ
           </button>
         </div>
 
@@ -153,7 +153,7 @@ export default function CategoryManager({
             id="category-input-name"
             type="text"
             required
-            placeholder={`အသစ်ထည့်မည့် ${getTypeName(activeType)} ခေါင်းစဉ်အုပ်စု`}
+            placeholder="ခေါင်းစဉ်အမည်..."
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
             className="flex-1 px-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors min-h-[42px] sm:min-h-0"
@@ -164,19 +164,19 @@ export default function CategoryManager({
             disabled={isAdding}
             className="rounded-lg bg-[#2563EB] px-4 py-2.5 sm:py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors focus:outline-none flex-shrink-0 cursor-pointer min-h-[42px] sm:min-h-0 flex items-center justify-center"
           >
-            {isAdding ? 'ထည့်နေသည်...' : 'ထည့်မည်'}
+            {isAdding ? 'ထည့်နေသည်...' : '+ ထည့်မည်'}
           </button>
         </form>
 
         {/* Categories List */}
         <div className="space-y-2">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-            လက်ရှိ {getTypeName(activeType)} ခေါင်းစဉ်အုပ်စုများ
+            ခေါင်းစဉ်များ
           </h4>
           
           {filteredCategories.length === 0 ? (
             <div className="text-center py-8 text-slate-400 text-sm">
-              ခေါင်းစဉ်အုပ်စု မရှိသေးပါ။ အပေါ်တွင် အသစ်ထည့်သွင်းနိုင်ပါသည်။
+              ခေါင်းစဉ် မရှိသေးပါ။
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
@@ -252,9 +252,9 @@ export default function CategoryManager({
             </div>
             
             <div>
-              <h3 className="text-base font-semibold text-[#111827]">ဤခေါင်းစဉ်အုပ်စုကို ဖျက်မည်မှာ သေချာပါသလား?</h3>
+              <h3 className="text-base font-semibold text-[#111827]">ခေါင်းစဉ် ဖျက်မည်လား?</h3>
               <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                ဤခေါင်းစဉ်အုပ်စုကို ဖျက်လိုက်ပါက စာရင်းမှ ဖယ်ရှားသွားမည်ဖြစ်ပါသည်။
+                ဤခေါင်းစဉ်ကို ဖျက်ပစ်ပါမည်။
               </p>
             </div>
 
@@ -264,7 +264,7 @@ export default function CategoryManager({
                 onClick={() => setDeletingId(null)}
                 className="flex-1 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                မဖျက်တော့ပါ
+                မလုပ်တော့ပါ
               </button>
               <button
                 id="btn-delete-category-confirm"

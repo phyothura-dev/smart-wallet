@@ -21,6 +21,7 @@ const WalletManager = lazy(() => import('./components/WalletManager'));
 const CategoryManager = lazy(() => import('./components/CategoryManager'));
 const TransactionHistory = lazy(() => import('./components/TransactionHistory'));
 const ProfileManager = lazy(() => import('./components/ProfileManager'));
+const LoanManager = lazy(() => import('./components/LoanManager'));
 
 function ViewLoadingSpinner() {
   return (
@@ -79,6 +80,7 @@ export default function App() {
     transfers,
     incomes,
     expenses,
+    loans,
     dataLoading,
     dbError,
     handleAddIncome,
@@ -96,6 +98,11 @@ export default function App() {
     handleAddTransfer,
     handleDeleteTransfer,
     handleUpdateProfile,
+    handleAddLoan,
+    handleEditLoan,
+    handleDeleteLoan,
+    handleAddLoanRepayment,
+    handleDeleteLoanRepayment,
   } = useUserData(user);
 
   const handleSignOut = async () => {
@@ -291,6 +298,7 @@ export default function App() {
                   expenses={expenses}
                   wallets={wallets}
                   transfers={transfers}
+                  loans={loans}
                   profile={profile}
                   onChangeTab={setCurrentTab}
                   onAddTransfer={handleAddTransfer}
@@ -324,12 +332,27 @@ export default function App() {
                 />
               )}
 
+              {currentTab === 'loans' && (
+                <LoanManager
+                  loans={loans}
+                  wallets={wallets}
+                  profile={profile}
+                  onAddLoan={handleAddLoan}
+                  onEditLoan={handleEditLoan}
+                  onDeleteLoan={handleDeleteLoan}
+                  onAddLoanRepayment={handleAddLoanRepayment}
+                  onDeleteLoanRepayment={handleDeleteLoanRepayment}
+                  onShowToast={handleShowToast}
+                />
+              )}
+
               {currentTab === 'wallets' && (
                 <WalletManager
                   wallets={wallets}
                   incomes={incomes}
                   expenses={expenses}
                   transfers={transfers}
+                  loans={loans}
                   onAddWallet={handleAddWallet}
                   onEditWallet={handleEditWallet}
                   onDeleteWallet={handleDeleteWallet}

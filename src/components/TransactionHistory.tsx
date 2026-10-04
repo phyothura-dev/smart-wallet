@@ -223,12 +223,7 @@ export default function TransactionHistory({
       <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 space-y-3.5 shadow-2xs">
         {/* Title & Export Action Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-slate-900 text-base">စာရင်းမှတ်တမ်းအားလုံး</h3>
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-              {filteredTransactions.length}
-            </span>
-          </div>
+          <h3 className="font-bold text-slate-900 text-base">မှတ်တမ်းအားလုံး</h3>
 
           <button
             id="btn-export-excel"
@@ -236,10 +231,10 @@ export default function TransactionHistory({
             onClick={handleExportExcel}
             disabled={filteredTransactions.length === 0}
             className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition-all focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-xs self-stretch sm:self-auto"
-            title="Excel/CSV ဖိုင်အဖြစ် ဒေါင်းလုဒ်ရယူပါ"
+            title="Excel ဖိုင်အဖြစ် ဒေါင်းလုဒ်ရယူပါ"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>Excel / CSV ထုတ်ယူမည်</span>
+            <span>Excel ထုတ်ယူမည်</span>
           </button>
         </div>
 
@@ -251,7 +246,7 @@ export default function TransactionHistory({
             <input
               id="tx-search-input"
               type="text"
-              placeholder="မှတ်တမ်းများကို ရှာဖွေပါ..."
+              placeholder="ရှာဖွေပါ..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
@@ -267,8 +262,8 @@ export default function TransactionHistory({
               className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
             >
               <option value="all">အမျိုးအစား: အားလုံး</option>
-              <option value="income">ဝင်ငွေသာ</option>
-              <option value="expense">ထွက်ငွေသာ</option>
+              <option value="income">ဝင်ငွေ</option>
+              <option value="expense">ထွက်ငွေ</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
           </div>
@@ -327,17 +322,14 @@ export default function TransactionHistory({
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-400 mb-4">
               <Clock className="w-6 h-6" />
             </div>
-            <h4 className="font-semibold text-slate-800 text-base">မှတ်တမ်း မတွေ့ရှိပါ</h4>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm">
-              ရွေးချယ်ထားသော စစ်ထုတ်မှုများနှင့် ကိုက်ညီသော မှတ်တမ်း မရှိပါ။
-            </p>
+            <h4 className="font-semibold text-slate-800 text-base">မှတ်တမ်း မတွေ့ပါ</h4>
             {allTransactions.length > 0 && (
               <button
                 id="btn-reset-filters-empty-state"
                 onClick={handleClearFilters}
                 className="mt-4 rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                စစ်ထုတ်မှုများ ဖျက်မည်
+                စစ်ထုတ်မှု ရှင်းလင်းမည်
               </button>
             )}
           </div>

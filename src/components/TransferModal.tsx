@@ -102,7 +102,7 @@ export default function TransferModal({
               <ArrowRightLeft className="w-4 h-4" />
             </div>
             <h3 className="text-base font-bold text-slate-900">
-              ပိုက်ဆံအိတ် အချင်းချင်း ငွေလွှဲမည်
+              ငွေလွှဲမည်
             </h3>
           </div>
           <button
@@ -119,7 +119,7 @@ export default function TransferModal({
           {/* from wallet */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-              ငွေလွှဲမည့် အကောင့် (From) *
+              လွှဲမည့် အကောင့် *
             </label>
             <select
               id="select-transfer-from"
@@ -145,7 +145,7 @@ export default function TransferModal({
           {/* to wallet */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-              လက်ခံမည့် အကောင့် (To) *
+              လက်ခံမည့် အကောင့် *
             </label>
             <select
               id="select-transfer-to"
@@ -166,7 +166,7 @@ export default function TransferModal({
           {/* amount */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-              ငွေလွှဲပမာဏ ({currencySymbol.trim()}) *
+              ပမာဏ ({currencySymbol.trim()}) *
             </label>
             <input
               id="input-transfer-amount"

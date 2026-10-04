@@ -110,3 +110,32 @@ export interface Transaction {
   note?: string;
   createdAt: string;
 }
+
+export type LoanType = 'lent' | 'borrowed'; // lent = ရရန်ရှိ, borrowed = ပေးရန်ရှိ
+export type LoanStatus = 'pending' | 'partial' | 'completed'; // ဆပ်ရန်ကျန်, တစ်စိတ်တစ်ပိုင်းဆပ်ပြီး, အကြွေးကြေပြီး
+
+export interface LoanRepayment {
+  id: string;
+  amount: number;
+  date: string; // 'YYYY-MM-DD'
+  walletId: string;
+  note?: string;
+  createdAt: string;
+}
+
+export interface Loan {
+  id: string;
+  personName: string;
+  type: LoanType;
+  amount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  startDate: string; // 'YYYY-MM-DD'
+  dueDate?: string; // 'YYYY-MM-DD'
+  walletId: string;
+  status: LoanStatus;
+  note?: string;
+  repayments: LoanRepayment[];
+  createdAt: string;
+}
+

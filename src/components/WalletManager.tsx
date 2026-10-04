@@ -16,7 +16,7 @@ import {
   Clock,
   X
 } from 'lucide-react';
-import { Wallet, WalletType, Income, Expense, Transfer, getWalletLabel, WALLET_TYPE_LABELS } from '../types';
+import { Wallet, WalletType, Income, Expense, Transfer, Loan, getWalletLabel, WALLET_TYPE_LABELS } from '../types';
 import { calculateWalletBalances } from '../utils/finance';
 import TransferModal from './TransferModal';
 
@@ -25,6 +25,7 @@ interface WalletManagerProps {
   incomes: Income[];
   expenses: Expense[];
   transfers?: Transfer[];
+  loans?: Loan[];
   onAddWallet: (data: Omit<Wallet, 'id' | 'createdAt'>) => Promise<void>;
   onEditWallet: (id: string, data: Partial<Wallet>) => Promise<void>;
   onDeleteWallet: (id: string) => Promise<void>;
@@ -87,6 +88,7 @@ export default function WalletManager({
   incomes,
   expenses,
   transfers = [],
+  loans = [],
   onAddWallet,
   onEditWallet,
   onDeleteWallet,
@@ -119,8 +121,8 @@ export default function WalletManager({
 
   // wallet balances
   const walletStats = useMemo(() => {
-    return calculateWalletBalances(wallets, incomes, expenses, transfers);
-  }, [wallets, incomes, expenses, transfers]);
+    return calculateWalletBalances(wallets, incomes, expenses, transfers, loans);
+  }, [wallets, incomes, expenses, transfers, loans]);
 
   const totalAssets = useMemo(() => {
     return walletStats.reduce((sum, w) => sum + w.currentBalance, 0);
@@ -251,13 +253,13 @@ export default function WalletManager({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-blue-200">
-              စုစုပေါင်း ပိုက်ဆံအိတ်များ လက်ကျန်
+              လက်ကျန်ငွေ
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold mt-1 tracking-tight">
               {currencySymbol}{totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h2>
             <p className="text-xs text-blue-200/80 mt-1">
-              ပိုက်ဆံအိတ် {wallets.length} ခု၏ စုစုပေါင်း လက်ကျန်ငွေ
+              ပိုက်ဆံအိတ် {wallets.length} ခု
             </p>
           </div>
 
@@ -280,7 +282,7 @@ export default function WalletManager({
                 className="flex items-center justify-center gap-2 bg-white text-blue-950 hover:bg-blue-50 font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-all text-sm cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                ပိုက်ဆံအိတ် အသစ်ထည့်မည်
+                + အသစ်ထည့်မည်
               </button>
             )}
           </div>
@@ -434,7 +436,7 @@ export default function WalletManager({
           <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
               <h3 className="text-base font-bold text-slate-900">
-                {editingId ? 'ပိုက်ဆံအိတ် ပြင်ဆင်ခြင်း' : 'ပိုက်ဆံအိတ် အသစ်ထည့်သွင်းခြင်း'}
+                {editingId ? 'ပိုက်ဆံအိတ် ပြင်ဆင်မည်' : 'ပိုက်ဆံအိတ် အသစ်ထည့်မည်'}
               </h3>
               <button
                 id="btn-close-wallet-modal"
@@ -478,7 +480,7 @@ export default function WalletManager({
               {type === 'custom' && (
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                    စိတ်ကြိုက် ပိုက်ဆံအိတ် အမည် *
+                    စိတ်ကြိုက်အမည် *
                   </label>
                   <input
                     id="input-wallet-custom-name"
@@ -486,7 +488,7 @@ export default function WalletManager({
                     required
                     value={walletName}
                     onChange={(e) => setWalletName(e.target.value)}
-                    placeholder="ဥပမာ - ဒေါ်လာ စုငွေစာရင်း သို့မဟုတ် Crypto"
+                    placeholder="အမည်..."
                     maxLength={50}
                     className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
                   />
@@ -556,9 +558,9 @@ export default function WalletManager({
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-base font-bold text-slate-900">ပိုက်ဆံအိတ်ကို ဖျက်ရန် သေချာပါသလား?</h4>
+              <h4 className="text-base font-bold text-slate-900">ပိုက်ဆံအိတ် ဖျက်မည်လား?</h4>
               <p className="text-xs text-slate-500 mt-1">
-                ဤပိုက်ဆံအိတ်ကို ဖျက်လိုက်ပါက ဝင်ငွေ/ထွက်ငွေ စာရင်းများသည် ပင်မ ပိုက်ဆံအိတ်သို့ အလိုအလျောက် ရောက်ရှိသွားပါမည်။
+                ဤပိုက်ဆံအိတ်ကို ဖျက်ပစ်ပါမည်။
               </p>
             </div>
             <div className="flex gap-2 justify-center pt-2">
@@ -593,9 +595,9 @@ export default function WalletManager({
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-base font-bold text-slate-900">ငွေလွှဲမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား?</h4>
+              <h4 className="text-base font-bold text-slate-900">ငွေလွှဲမှတ်တမ်း ဖျက်မည်လား?</h4>
               <p className="text-xs text-slate-500 mt-1">
-                ဤငွေလွှဲမှတ်တမ်းကို ဖျက်လိုက်ပါက သက်ဆိုင်ရာ ပိုက်ဆံအိတ်များ၏ လက်ကျန်ငွေသည် မူလအတိုင်း ပြန်လည်ပြောင်းလဲသွားပါမည်။
+                ဤငွေလွှဲမှတ်တမ်းကို ဖျက်ပစ်ပါမည်။
               </p>
             </div>
             <div className="flex gap-2 justify-center pt-2">

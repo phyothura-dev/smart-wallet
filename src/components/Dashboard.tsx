@@ -9,7 +9,10 @@ import {
   Calendar,
   WalletCards,
   Plus,
-  ArrowRightLeft
+  ArrowRightLeft,
+  HandCoins,
+  ArrowDownLeft,
+  ArrowUpRight
 } from 'lucide-react';
 import {
   BarChart,
@@ -23,7 +26,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { Income, Expense, UserProfile, Transaction, Wallet, Transfer, getWalletLabel } from '../types';
+import { Income, Expense, UserProfile, Transaction, Wallet, Transfer, Loan, getWalletLabel } from '../types';
 import { getWalletIcon } from './WalletManager';
 import { calculateWalletBalances } from '../utils/finance';
 import TransferModal from './TransferModal';
@@ -35,6 +38,7 @@ interface DashboardProps {
   expenses: Expense[];
   wallets?: Wallet[];
   transfers?: Transfer[];
+  loans?: Loan[];
   profile: UserProfile | null;
   onChangeTab: (tab: string) => void;
   onAddTransfer?: (data: Omit<Transfer, 'id' | 'createdAt'>) => Promise<void>;
@@ -46,6 +50,7 @@ export default function Dashboard({
   expenses,
   wallets = [],
   transfers = [],
+  loans = [],
   profile: _profile,
   onChangeTab,
   onAddTransfer,
@@ -121,8 +126,8 @@ export default function Dashboard({
 
   // wallet balances
   const walletBalances = useMemo(() => {
-    return calculateWalletBalances(wallets, incomes, expenses, transfers);
-  }, [wallets, incomes, expenses, transfers]);
+    return calculateWalletBalances(wallets, incomes, expenses, transfers, loans);
+  }, [wallets, incomes, expenses, transfers, loans]);
 
   const openTransferModal = (defaultFromId?: string) => {
     setSelectedFromWalletId(defaultFromId);
@@ -138,6 +143,19 @@ export default function Dashboard({
     const allExp = expenses.reduce((sum, item) => sum + item.amount, 0);
     return allInc - allExp;
   }, [walletBalances, incomes, expenses]);
+
+  // loan stats
+  const loanStats = useMemo(() => {
+    let lent = 0;
+    let borrowed = 0;
+    let active = 0;
+    for (const l of loans) {
+      if (l.type === 'lent') lent += l.remainingAmount;
+      else borrowed += l.remainingAmount;
+      if (l.status !== 'completed') active++;
+    }
+    return { lent, borrowed, active };
+  }, [loans]);
 
   // recent transactions
   const recentTransactions = useMemo(() => {
@@ -268,70 +286,13 @@ export default function Dashboard({
         )}
       </div>
 
-      {/* 2. Wallets Quick Overview Cards (Streamlined) */}
-      {walletBalances.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
-                <WalletCards className="w-4 h-4" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-sm">ပိုက်ဆံအိတ်များ</h3>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              {wallets.length >= 2 && onAddTransfer && (
-                <button
-                  onClick={() => openTransferModal()}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors"
-                >
-                  <ArrowRightLeft className="w-3.5 h-3.5" /> ငွေလွှဲမည်
-                </button>
-              )}
-              <button
-                id="dash-btn-manage-wallets"
-                onClick={() => onChangeTab('wallets')}
-                className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
-              >
-                စီမံမည် <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {walletBalances.map((w) => {
-              const WIcon = getWalletIcon(w.type);
-              return (
-                <div
-                  key={w.id}
-                  onClick={() => onChangeTab('wallets')}
-                  className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 hover:border-slate-200 transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-blue-600 flex-shrink-0">
-                      <WIcon className="w-4 h-4" />
-                    </div>
-                    <p className="font-semibold text-xs text-slate-900 truncate">{w.displayName}</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="font-bold text-xs text-slate-900">
-                      {currencySymbol}{w.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* 3. Overview Metric Cards */}
+      {/* Overview Metric Cards (Hero) */}
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3 sm:gap-5">
         {/* Total Assets Balance Card */}
-        <div id="card-total-balance" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs transition-all">
+        <div id="card-total-balance" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              စုစုပေါင်း လက်ကျန်ငွေ
+              လက်ကျန်ငွေ
             </span>
             <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
               totalAssets >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600'
@@ -349,10 +310,10 @@ export default function Dashboard({
         </div>
 
         {/* Period Income Card */}
-        <div id="card-total-income" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs transition-all">
+        <div id="card-total-income" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {dateRange.label} ဝင်ငွေ
+              ဝင်ငွေ
             </span>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
               <TrendingUp className="h-4.5 w-4.5" />
@@ -367,10 +328,10 @@ export default function Dashboard({
         </div>
 
         {/* Period Expenses Card */}
-        <div id="card-total-expenses" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs transition-all">
+        <div id="card-total-expenses" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {dateRange.label} ထွက်ငွေ
+              ထွက်ငွေ
             </span>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
               <TrendingDown className="h-4.5 w-4.5" />
@@ -388,12 +349,52 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* 4. Visual Charts Section */}
+      {/* Loans Overview Strip (Clean & Minimalist) */}
+      {loans.length > 0 && (
+        <div
+          id="dash-loan-overview-strip"
+          onClick={() => onChangeTab('loans')}
+          className="bg-white rounded-xl border border-slate-200/90 px-4 py-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-slate-300 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <HandCoins className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-slate-800">
+                ချေးငွေနှင့် အကြွေးများ
+              </span>
+              <span className="text-[11px] font-medium text-slate-400 ml-1.5">
+                ({loanStats.active} ခု ဆပ်ရန်ကျန်)
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 text-xs pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-400 font-medium">ရရန်ရှိ:</span>
+              <span className="font-bold text-emerald-600">
+                {currencySymbol}{loanStats.lent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="h-3 w-px bg-slate-200 hidden sm:block" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-400 font-medium">ပေးရန်ရှိ:</span>
+              <span className="font-bold text-amber-600">
+                {currencySymbol}{loanStats.borrowed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all hidden sm:block" />
+          </div>
+        </div>
+      )}
+
+      {/* Visual Charts Section */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Monthly Income vs Expense Chart */}
         <div id="card-monthly-chart" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 lg:col-span-2 flex flex-col min-h-[300px] sm:h-[360px]">
           <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <h4 className="font-semibold text-slate-900 text-sm">လအလိုက် ဝင်ငွေ/ထွက်ငွေ နှိုင်းယှဉ်ချက် (၆ လ)</h4>
+            <h4 className="font-semibold text-slate-900 text-sm">လစဉ် နှိုင်းယှဉ်ချက်</h4>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 bg-[#2563EB] rounded-sm" />
@@ -498,16 +499,16 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* 5. Recent Transactions */}
-      <div id="card-recent-transactions" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
+      {/* Recent Transactions */}
+      <div id="card-recent-transactions" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xs">
         <div className="mb-4 flex items-center justify-between">
-          <h4 className="font-semibold text-slate-900 text-sm">လတ်တလော စာရင်းမှတ်တမ်းများ</h4>
+          <h4 className="font-semibold text-slate-900 text-sm">လတ်တလော မှတ်တမ်း</h4>
           <button
             id="dash-btn-view-all-tx"
             onClick={() => onChangeTab('transactions')}
-            className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline cursor-pointer min-h-[36px]"
+            className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer min-h-[36px]"
           >
-            မှတ်တမ်းအားလုံးကြည့်မည် <ArrowRight className="h-3.5 w-3.5" />
+            အားလုံးကြည့်မည် <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
 

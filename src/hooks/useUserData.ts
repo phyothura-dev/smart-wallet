@@ -12,7 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { seedNewUserData } from '../lib/seedData';
-import type { UserProfile, Category, Income, Expense, Wallet, Transfer } from '../types';
+import type { UserProfile, Category, Income, Expense, Wallet, Transfer, Loan, LoanRepayment, LoanType, LoanStatus } from '../types';
 
 export interface DbErrorState {
   message: string;
@@ -27,6 +27,7 @@ export function useUserData(user: User | null) {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
 
   const [dataLoading, setDataLoading] = useState<boolean>(false);
   const [dbError, setDbError] = useState<DbErrorState | null>(null);
@@ -39,6 +40,7 @@ export function useUserData(user: User | null) {
       setTransfers([]);
       setIncomes([]);
       setExpenses([]);
+      setLoans([]);
       setDataLoading(false);
       setDbError(null);
       return;
@@ -53,6 +55,7 @@ export function useUserData(user: User | null) {
     let loadedIncomes = false;
     let loadedExpenses = false;
     let loadedTransfers = false;
+    let loadedLoans = false;
 
     const checkLoadingFinished = () => {
       if (
@@ -61,7 +64,8 @@ export function useUserData(user: User | null) {
         loadedWallets &&
         loadedIncomes &&
         loadedExpenses &&
-        loadedTransfers
+        loadedTransfers &&
+        loadedLoans
       ) {
         setDataLoading(false);
       }
@@ -286,6 +290,47 @@ export function useUserData(user: User | null) {
     );
     unsubs.push(unsubTransfers);
 
+    // loans listener
+    const unsubLoans = onSnapshot(
+      collection(db, 'users', user.uid, 'loans'),
+      (snapshot) => {
+        const list: Loan[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          list.push({
+            id: docSnap.id,
+            personName: data.personName || '',
+            type: data.type || 'lent',
+            amount: Number(data.amount) || 0,
+            paidAmount: Number(data.paidAmount) || 0,
+            remainingAmount: Number(data.remainingAmount) || 0,
+            startDate: data.startDate || '',
+            dueDate: data.dueDate || undefined,
+            walletId: data.walletId || '',
+            status: data.status || 'pending',
+            note: data.note || undefined,
+            repayments: Array.isArray(data.repayments) ? data.repayments : [],
+            createdAt: data.createdAt || '',
+          });
+        });
+        setLoans(list);
+
+        if (!loadedLoans) {
+          loadedLoans = true;
+          checkLoadingFinished();
+        }
+      },
+      (err) => {
+        setDbError({
+          message: err instanceof Error ? err.message : String(err),
+          code: (err as any).code || 'unknown',
+          path: `users/${user.uid}/loans`,
+        });
+        setDataLoading(false);
+      }
+    );
+    unsubs.push(unsubLoans);
+
     // cleanup listeners
     return () => {
       unsubs.forEach((unsub) => unsub());
@@ -508,6 +553,169 @@ export function useUserData(user: User | null) {
     [user]
   );
 
+  const handleAddLoan = useCallback(
+    async (data: Omit<Loan, 'id' | 'createdAt' | 'paidAmount' | 'remainingAmount' | 'status' | 'repayments'>) => {
+      if (!user) return;
+      const path = `users/${user.uid}/loans`;
+      try {
+        const payload: Record<string, any> = {
+          personName: data.personName.trim(),
+          type: data.type,
+          amount: data.amount,
+          paidAmount: 0,
+          remainingAmount: data.amount,
+          startDate: data.startDate,
+          walletId: data.walletId,
+          status: 'pending',
+          repayments: [],
+          createdAt: new Date().toISOString(),
+        };
+        if (data.dueDate && data.dueDate.trim()) {
+          payload.dueDate = data.dueDate.trim();
+        }
+        if (data.note && data.note.trim()) {
+          payload.note = data.note.trim();
+        }
+        await addDoc(collection(db, 'users', user.uid, 'loans'), payload);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.CREATE, path);
+        throw err;
+      }
+    },
+    [user]
+  );
+
+  const handleEditLoan = useCallback(
+    async (id: string, data: { personName?: string; type?: LoanType; amount?: number; startDate?: string; dueDate?: string; walletId?: string; note?: string }) => {
+      if (!user) return;
+      const path = `users/${user.uid}/loans/${id}`;
+      try {
+        const existing = loans.find((l) => l.id === id);
+        if (!existing) return;
+
+        const updatedAmount = data.amount !== undefined ? data.amount : existing.amount;
+        const currentPaid = existing.paidAmount;
+        const newRemaining = Math.max(0, updatedAmount - currentPaid);
+        let newStatus: LoanStatus = 'pending';
+        if (newRemaining === 0 && updatedAmount > 0) {
+          newStatus = 'completed';
+        } else if (currentPaid > 0) {
+          newStatus = 'partial';
+        }
+
+        const payload: Record<string, any> = {
+          personName: data.personName !== undefined ? data.personName.trim() : existing.personName,
+          type: data.type || existing.type,
+          amount: updatedAmount,
+          paidAmount: existing.paidAmount,
+          remainingAmount: newRemaining,
+          startDate: data.startDate || existing.startDate,
+          walletId: data.walletId || existing.walletId,
+          status: newStatus,
+          repayments: existing.repayments || [],
+        };
+        const dueDate = data.dueDate !== undefined ? data.dueDate : existing.dueDate;
+        if (dueDate && dueDate.trim()) {
+          payload.dueDate = dueDate.trim();
+        }
+        const note = data.note !== undefined ? data.note : existing.note;
+        if (note && note.trim()) {
+          payload.note = note.trim();
+        }
+
+        await updateDoc(doc(db, 'users', user.uid, 'loans', id), payload);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.UPDATE, path);
+        throw err;
+      }
+    },
+    [user, loans]
+  );
+
+  const handleDeleteLoan = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      const path = `users/${user.uid}/loans/${id}`;
+      try {
+        await deleteDoc(doc(db, 'users', user.uid, 'loans', id));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, path);
+        throw err;
+      }
+    },
+    [user]
+  );
+
+  const handleAddLoanRepayment = useCallback(
+    async (loanId: string, repaymentData: Omit<LoanRepayment, 'id' | 'createdAt'>) => {
+      if (!user) return;
+      const path = `users/${user.uid}/loans/${loanId}`;
+      try {
+        const loan = loans.find((l) => l.id === loanId);
+        if (!loan) throw new Error('Loan not found');
+
+        const newRepayment: LoanRepayment = {
+          id: Math.random().toString(36).substring(2, 11),
+          amount: repaymentData.amount,
+          date: repaymentData.date,
+          walletId: repaymentData.walletId || loan.walletId,
+          createdAt: new Date().toISOString(),
+        };
+        if (repaymentData.note && repaymentData.note.trim()) {
+          newRepayment.note = repaymentData.note.trim();
+        }
+
+        const updatedRepayments = [...(loan.repayments || []), newRepayment];
+        const newPaidAmount = updatedRepayments.reduce((sum, r) => sum + r.amount, 0);
+        const newRemaining = Math.max(0, loan.amount - newPaidAmount);
+        const newStatus: LoanStatus = newRemaining === 0 ? 'completed' : 'partial';
+
+        await updateDoc(doc(db, 'users', user.uid, 'loans', loanId), {
+          repayments: updatedRepayments,
+          paidAmount: newPaidAmount,
+          remainingAmount: newRemaining,
+          status: newStatus,
+        });
+      } catch (err) {
+        handleFirestoreError(err, OperationType.UPDATE, path);
+        throw err;
+      }
+    },
+    [user, loans]
+  );
+
+  const handleDeleteLoanRepayment = useCallback(
+    async (loanId: string, repaymentId: string) => {
+      if (!user) return;
+      const path = `users/${user.uid}/loans/${loanId}`;
+      try {
+        const loan = loans.find((l) => l.id === loanId);
+        if (!loan) throw new Error('Loan not found');
+
+        const updatedRepayments = (loan.repayments || []).filter((r) => r.id !== repaymentId);
+        const newPaidAmount = updatedRepayments.reduce((sum, r) => sum + r.amount, 0);
+        const newRemaining = Math.max(0, loan.amount - newPaidAmount);
+        let newStatus: LoanStatus = 'pending';
+        if (newRemaining === 0 && loan.amount > 0) {
+          newStatus = 'completed';
+        } else if (newPaidAmount > 0) {
+          newStatus = 'partial';
+        }
+
+        await updateDoc(doc(db, 'users', user.uid, 'loans', loanId), {
+          repayments: updatedRepayments,
+          paidAmount: newPaidAmount,
+          remainingAmount: newRemaining,
+          status: newStatus,
+        });
+      } catch (err) {
+        handleFirestoreError(err, OperationType.UPDATE, path);
+        throw err;
+      }
+    },
+    [user, loans]
+  );
+
   return {
     profile,
     categories,
@@ -515,6 +723,7 @@ export function useUserData(user: User | null) {
     transfers,
     incomes,
     expenses,
+    loans,
     dataLoading,
     dbError,
     handleAddIncome,
@@ -532,5 +741,10 @@ export function useUserData(user: User | null) {
     handleAddTransfer,
     handleDeleteTransfer,
     handleUpdateProfile,
+    handleAddLoan,
+    handleEditLoan,
+    handleDeleteLoan,
+    handleAddLoanRepayment,
+    handleDeleteLoanRepayment,
   };
 }

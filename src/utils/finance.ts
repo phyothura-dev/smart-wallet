@@ -1,4 +1,4 @@
-import { Wallet, Income, Expense, Transfer, getWalletLabel } from '../types';
+import { Wallet, Income, Expense, Transfer, Loan, getWalletLabel } from '../types';
 
 export interface CalculatedWallet extends Wallet {
   displayName: string;
@@ -6,6 +6,10 @@ export interface CalculatedWallet extends Wallet {
   totalExpense: number;
   totalTransfersOut: number;
   totalTransfersIn: number;
+  totalLentOut: number;
+  totalBorrowedIn: number;
+  totalRepaymentsReceived: number;
+  totalRepaymentsPaid: number;
   currentBalance: number;
   txCount: number;
 }
@@ -15,7 +19,8 @@ export function calculateWalletBalances(
   wallets: Wallet[],
   incomes: Income[],
   expenses: Expense[],
-  transfers: Transfer[]
+  transfers: Transfer[],
+  loans: Loan[] = []
 ): CalculatedWallet[] {
   if (!wallets || wallets.length === 0) return [];
   const defaultWallet = wallets[0];
@@ -32,13 +37,52 @@ export function calculateWalletBalances(
     const walletTransfersOut = transfers.filter((t) => t.fromWalletId === w.id);
     const walletTransfersIn = transfers.filter((t) => t.toWalletId === w.id);
 
+    // loans lent out from this wallet
+    const loansLentOut = loans.filter(
+      (l) => l.type === 'lent' && (l.walletId === w.id || (isThisDefault && !l.walletId))
+    );
+    // loans borrowed into this wallet
+    const loansBorrowedIn = loans.filter(
+      (l) => l.type === 'borrowed' && (l.walletId === w.id || (isThisDefault && !l.walletId))
+    );
+
+    // repayments
+    let totalRepaymentsReceived = 0;
+    let totalRepaymentsPaid = 0;
+    let walletRepaymentsCount = 0;
+
+    for (const loan of loans) {
+      if (!loan.repayments || !Array.isArray(loan.repayments)) continue;
+      for (const rep of loan.repayments) {
+        const matchesWallet = rep.walletId === w.id || (isThisDefault && !rep.walletId);
+        if (matchesWallet) {
+          walletRepaymentsCount++;
+          if (loan.type === 'lent') {
+            totalRepaymentsReceived += rep.amount;
+          } else {
+            totalRepaymentsPaid += rep.amount;
+          }
+        }
+      }
+    }
+
     const totalIncome = walletIncomes.reduce((sum, i) => sum + i.amount, 0);
     const totalExpense = walletExpenses.reduce((sum, e) => sum + e.amount, 0);
     const totalTransfersOut = walletTransfersOut.reduce((sum, t) => sum + t.amount, 0);
     const totalTransfersIn = walletTransfersIn.reduce((sum, t) => sum + t.amount, 0);
+    const totalLentOut = loansLentOut.reduce((sum, l) => sum + l.amount, 0);
+    const totalBorrowedIn = loansBorrowedIn.reduce((sum, l) => sum + l.amount, 0);
 
     const currentBalance =
-      (w.initialBalance || 0) + totalIncome - totalExpense - totalTransfersOut + totalTransfersIn;
+      (w.initialBalance || 0) +
+      totalIncome -
+      totalExpense -
+      totalTransfersOut +
+      totalTransfersIn -
+      totalLentOut +
+      totalBorrowedIn +
+      totalRepaymentsReceived -
+      totalRepaymentsPaid;
 
     return {
       ...w,
@@ -47,12 +91,19 @@ export function calculateWalletBalances(
       totalExpense,
       totalTransfersOut,
       totalTransfersIn,
+      totalLentOut,
+      totalBorrowedIn,
+      totalRepaymentsReceived,
+      totalRepaymentsPaid,
       currentBalance,
       txCount:
         walletIncomes.length +
         walletExpenses.length +
         walletTransfersOut.length +
-        walletTransfersIn.length,
+        walletTransfersIn.length +
+        loansLentOut.length +
+        loansBorrowedIn.length +
+        walletRepaymentsCount,
     };
   });
 }

@@ -75,6 +75,27 @@ service cloud.firestore {
           && request.resource.data.date is string;
         allow delete: if isOwner(userId);
       }
+
+      // loans collection
+      match /loans/{loanId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.personName is string
+          && request.resource.data.personName.size() > 0
+          && request.resource.data.personName.size() <= 100
+          && request.resource.data.type in ['lent', 'borrowed']
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.paidAmount is number
+          && request.resource.data.paidAmount >= 0
+          && request.resource.data.remainingAmount is number
+          && request.resource.data.remainingAmount >= 0
+          && request.resource.data.status in ['pending', 'partial', 'completed']
+          && request.resource.data.startDate is string
+          && request.resource.data.walletId is string
+          && request.resource.data.repayments is list;
+        allow delete: if isOwner(userId);
+      }
     }
   }
 }

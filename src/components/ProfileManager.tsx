@@ -112,7 +112,7 @@ export default function ProfileManager({
           {/* avatar picker */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-3">
-              ပရိုဖိုင်ပုံ ရွေးချယ်ပါ
+              ပရိုဖိုင်ပုံ
             </label>
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="relative group">
@@ -172,7 +172,7 @@ export default function ProfileManager({
             {/* full name */}
             <div>
               <label htmlFor="p-fullName" className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1.5">
-                အမည် အပြည့်အစုံ
+                အမည်
               </label>
               <div className="relative">
                 <User className="absolute left-3.5 top-3 sm:top-2.5 h-4 w-4 text-slate-400" />
@@ -192,7 +192,7 @@ export default function ProfileManager({
               {/* monthly income goal */}
               <div>
                 <label htmlFor="p-monthlyGoal" className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1.5">
-                  လစဉ် အသားတင်ဝင်ငွေ ရည်မှန်းချက် (Ks)
+                  လစဉ် ရည်မှန်းချက် (Ks)
                 </label>
                 <div className="relative">
                   <Award className="absolute left-3.5 top-3 sm:top-2.5 h-4 w-4 text-slate-400" />
@@ -205,9 +205,6 @@ export default function ProfileManager({
                     className="block w-full pl-10 pr-3 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
                   />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1.5">
-                  လစဉ် ကုန်ကျစရိတ်များ နုတ်ပြီးနောက် အသားတင် ရှာဖွေစုဆောင်းလိုသော ပစ်မှတ်ဝင်ငွေ (Net Amount = ဝင်ငွေ - ထွက်ငွေ) ကို သတ်မှတ်ပါ (ဗလာထားပါက ရည်မှန်းချက် ပယ်ဖျက်ပါမည်)။
-                </p>
               </div>
             </div>
           </div>

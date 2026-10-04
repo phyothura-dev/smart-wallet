@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowUpRight, ArrowDownRight, FolderTree, ArrowLeftRight, UserCircle, LogOut, WalletCards, X, Download } from 'lucide-react';
+import { LayoutDashboard, ArrowUpRight, ArrowDownRight, FolderTree, ArrowLeftRight, UserCircle, LogOut, WalletCards, X, Download, HandCoins } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface SidebarProps {
@@ -26,6 +26,7 @@ export default function Sidebar({
     { id: 'dashboard', label: 'ပင်မစာမျက်နှာ', icon: LayoutDashboard },
     { id: 'incomes', label: 'ဝင်ငွေ', icon: ArrowUpRight },
     { id: 'expenses', label: 'ထွက်ငွေ', icon: ArrowDownRight },
+    { id: 'loans', label: 'ချေးငွေနှင့် အကြွေးများ', icon: HandCoins },
     { id: 'wallets', label: 'ပိုက်ဆံအိတ်များ', icon: WalletCards },
     { id: 'categories', label: 'အမျိုးအစားများ', icon: FolderTree },
     { id: 'transactions', label: 'မှတ်တမ်း', icon: ArrowLeftRight },
@@ -144,7 +145,7 @@ export default function Sidebar({
               className="mt-3 flex w-full min-h-[44px] items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#2563EB] bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer border border-blue-100"
             >
               <Download className="h-5 w-5 text-[#2563EB] flex-shrink-0" />
-              App သွင်းမည် (PWA)
+              App သွင်းမည် 
             </button>
           )}
 
