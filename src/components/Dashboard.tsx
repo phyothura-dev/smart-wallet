@@ -30,6 +30,7 @@ import { Income, Expense, UserProfile, Transaction, Wallet, Transfer, Loan, getW
 import { getWalletIcon } from './WalletManager';
 import { calculateWalletBalances } from '../utils/finance';
 import TransferModal from './TransferModal';
+import type { ResolvedTheme } from '../hooks/useTheme';
 
 type TimeFrame = 'this_month' | 'last_month' | 'this_year' | 'all' | 'custom';
 
@@ -40,6 +41,7 @@ interface DashboardProps {
   transfers?: Transfer[];
   loans?: Loan[];
   profile: UserProfile | null;
+  resolvedTheme?: ResolvedTheme;
   onChangeTab: (tab: string) => void;
   onAddTransfer?: (data: Omit<Transfer, 'id' | 'createdAt'>) => Promise<void>;
   onShowToast?: (message: string, type: 'success' | 'error' | 'info') => void;
@@ -52,10 +54,12 @@ export default function Dashboard({
   transfers = [],
   loans = [],
   profile: _profile,
+  resolvedTheme = 'light',
   onChangeTab,
   onAddTransfer,
   onShowToast
 }: DashboardProps) {
+  const isDark = resolvedTheme === 'dark';
   const currencySymbol = 'Ks ';
 
   // time frame filter state
@@ -239,7 +243,7 @@ export default function Dashboard({
     <div className="space-y-5 sm:space-y-6">
       {/* 1. Time-Frame Filter Toolbar (Streamlined) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div className="flex flex-wrap items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+        <div className="flex flex-wrap items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
           {[
             { id: 'this_month', label: 'ဒီလ' },
             { id: 'last_month', label: 'ပြီးခဲ့သည့်လ' },
@@ -256,7 +260,7 @@ export default function Dashboard({
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-xs font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 {tf.label}
@@ -267,20 +271,20 @@ export default function Dashboard({
 
         {/* Custom date range picker if custom selected */}
         {timeFrame === 'custom' && (
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs text-xs animate-in fade-in duration-150">
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs text-xs animate-in fade-in duration-150">
             <span className="text-slate-400">မှ</span>
             <input
               type="date"
               value={customStart}
               onChange={(e) => setCustomStart(e.target.value)}
-              className="border-0 text-slate-800 bg-transparent focus:outline-none cursor-pointer"
+              className="border-0 text-slate-800 dark:text-slate-100 bg-transparent focus:outline-none cursor-pointer"
             />
             <span className="text-slate-400">ထိ</span>
             <input
               type="date"
               value={customEnd}
               onChange={(e) => setCustomEnd(e.target.value)}
-              className="border-0 text-slate-800 bg-transparent focus:outline-none cursor-pointer"
+              className="border-0 text-slate-800 dark:text-slate-100 bg-transparent focus:outline-none cursor-pointer"
             />
           </div>
         )}
@@ -289,19 +293,19 @@ export default function Dashboard({
       {/* Overview Metric Cards (Hero) */}
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3 sm:gap-5">
         {/* Total Assets Balance Card */}
-        <div id="card-total-balance" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-2xs transition-all">
+        <div id="card-total-balance" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               လက်ကျန်ငွေ
             </span>
             <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-              totalAssets >= 0 ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600'
+              totalAssets >= 0 ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400' : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400'
             }`}>
               <DollarSign className="h-4.5 w-4.5" />
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 break-words">
+            <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 break-words">
               {totalAssets < 0 ? '-' : ''}
               {currencySymbol}
               {Math.abs(totalAssets).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -310,17 +314,17 @@ export default function Dashboard({
         </div>
 
         {/* Period Income Card */}
-        <div id="card-total-income" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-2xs transition-all">
+        <div id="card-total-income" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               ဝင်ငွေ
             </span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
               <TrendingUp className="h-4.5 w-4.5" />
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 break-words">
+            <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 break-words">
               +{currencySymbol}
               {periodData.totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
@@ -328,21 +332,21 @@ export default function Dashboard({
         </div>
 
         {/* Period Expenses Card */}
-        <div id="card-total-expenses" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-2xs transition-all">
+        <div id="card-total-expenses" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               ထွက်ငွေ
             </span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
               <TrendingDown className="h-4.5 w-4.5" />
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3 flex items-baseline justify-between gap-2">
-            <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 break-words">
+            <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 break-words">
               -{currencySymbol}
               {periodData.totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
-            <span className={`text-xs font-semibold ${periodData.netFlow >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+            <span className={`text-xs font-semibold ${periodData.netFlow >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
               အသားတင်: {periodData.netFlow >= 0 ? '+' : ''}{currencySymbol}{periodData.netFlow.toLocaleString()}
             </span>
           </div>
@@ -354,14 +358,14 @@ export default function Dashboard({
         <div
           id="dash-loan-overview-strip"
           onClick={() => onChangeTab('loans')}
-          className="bg-white rounded-xl border border-slate-200/90 px-4 py-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-slate-300 transition-all cursor-pointer group"
+          className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 px-4 py-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer group"
         >
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
               <HandCoins className="h-4 w-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold text-slate-800">
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">
                 ချေးငွေနှင့် အကြွေးများ
               </span>
               <span className="text-[11px] font-medium text-slate-400 ml-1.5">
@@ -370,21 +374,21 @@ export default function Dashboard({
             </div>
           </div>
 
-          <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 text-xs pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+          <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 text-xs pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-1.5">
               <span className="text-slate-400 font-medium">ရရန်ရှိ:</span>
-              <span className="font-bold text-emerald-600">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">
                 {currencySymbol}{loanStats.lent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
-            <div className="h-3 w-px bg-slate-200 hidden sm:block" />
+            <div className="h-3 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
             <div className="flex items-center gap-1.5">
               <span className="text-slate-400 font-medium">ပေးရန်ရှိ:</span>
-              <span className="font-bold text-amber-600">
+              <span className="font-bold text-amber-600 dark:text-amber-400">
                 {currencySymbol}{loanStats.borrowed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
-            <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all hidden sm:block" />
+            <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all hidden sm:block" />
           </div>
         </div>
       )}
@@ -392,35 +396,42 @@ export default function Dashboard({
       {/* Visual Charts Section */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Monthly Income vs Expense Chart */}
-        <div id="card-monthly-chart" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 lg:col-span-2 flex flex-col min-h-[300px] sm:h-[360px]">
+        <div id="card-monthly-chart" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 lg:col-span-2 flex flex-col min-h-[300px] sm:h-[360px]">
           <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <h4 className="font-semibold text-slate-900 text-sm">လစဉ် နှိုင်းယှဉ်ချက်</h4>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">လစဉ် နှိုင်းယှဉ်ချက်</h4>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 bg-[#2563EB] rounded-sm" />
-                <span className="text-slate-600 font-medium">ဝင်ငွေ</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium">ဝင်ငွေ</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 bg-rose-500 rounded-sm" />
-                <span className="text-slate-600 font-medium">ထွက်ငွေ</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium">ထွက်ငွေ</span>
               </div>
             </div>
           </div>
           <div className="flex-1 min-h-[220px] w-full">
             {incomes.length === 0 && expenses.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center p-4">
-                <Activity className="h-10 w-10 text-slate-300 mb-2" />
-                <p className="text-sm text-slate-500">ဇယားတွင် ဖော်ပြရန် မှတ်တမ်းမရှိသေးပါ</p>
+                <Activity className="h-10 w-10 text-slate-300 dark:text-slate-600 mb-2" />
+                <p className="text-sm text-slate-500 dark:text-slate-400">ဇယားတွင် ဖော်ပြရန် မှတ်တမ်းမရှိသေးပါ</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyChartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#f1f5f9'} />
                   <XAxis dataKey="monthName" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip
-                    cursor={{ fill: '#f8fafc' }}
-                    contentStyle={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: 'none', fontSize: '12px' }}
+                    cursor={{ fill: isDark ? '#1e293b' : '#f8fafc' }}
+                    contentStyle={{
+                      background: isDark ? '#0f172a' : '#ffffff',
+                      color: isDark ? '#f1f5f9' : '#0f172a',
+                      borderRadius: '8px',
+                      border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
+                      boxShadow: 'none',
+                      fontSize: '12px',
+                    }}
                     formatter={(value: number) => [`${currencySymbol}${value.toLocaleString()}`, '']}
                   />
                   <Bar dataKey="income" fill="#2563EB" radius={[3, 3, 0, 0]} barSize={12} />
@@ -432,18 +443,18 @@ export default function Dashboard({
         </div>
 
         {/* Expenses by Category Pie Chart (Reflecting Period) */}
-        <div id="card-category-chart" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 flex flex-col min-h-[300px] sm:h-[360px]">
+        <div id="card-category-chart" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 flex flex-col min-h-[300px] sm:h-[360px]">
           <div className="mb-3 sm:mb-4 flex items-center justify-between">
-            <h4 className="font-semibold text-slate-900 text-sm">အမျိုးအစားအလိုက် သုံးစွဲမှု</h4>
-            <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">အမျိုးအစားအလိုက် သုံးစွဲမှု</h4>
+            <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-medium">
               {dateRange.label}
             </span>
           </div>
           <div className="flex-1 min-h-0 flex flex-col justify-center">
             {periodData.filteredExpenses.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center p-4">
-                <Folder className="h-10 w-10 text-slate-300 mb-2" />
-                <p className="text-sm text-slate-500">ဤကာလတွင် သုံးစွဲမှု မှတ်တမ်း မရှိသေးပါ</p>
+                <Folder className="h-10 w-10 text-slate-300 dark:text-slate-600 mb-2" />
+                <p className="text-sm text-slate-500 dark:text-slate-400">ဤကာလတွင် သုံးစွဲမှု မှတ်တမ်း မရှိသေးပါ</p>
               </div>
             ) : (
               <>
@@ -464,7 +475,14 @@ export default function Dashboard({
                         ))}
                       </Pie>
                       <Tooltip
-                        contentStyle={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                        contentStyle={{
+                          background: isDark ? '#0f172a' : '#ffffff',
+                          color: isDark ? '#f1f5f9' : '#0f172a',
+                          borderRadius: '8px',
+                          border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
+                          fontSize: '12px',
+                        }}
+                        itemStyle={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
                         formatter={(value: number) => [`${currencySymbol}${value.toLocaleString()}`, 'ပမာဏ']}
                       />
                     </PieChart>
@@ -472,7 +490,7 @@ export default function Dashboard({
                   {/* Center Text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-0.5">
                     <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">စုစုပေါင်း</span>
-                    <span className="text-sm sm:text-base font-bold text-slate-800">
+                    <span className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100">
                       {currencySymbol}
                       {periodData.totalExpense.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </span>
@@ -485,9 +503,9 @@ export default function Dashboard({
                     <div key={entry.name} className="flex items-center justify-between text-xs font-medium">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                        <span className="truncate text-slate-700">{entry.name}</span>
+                        <span className="truncate text-slate-700 dark:text-slate-200">{entry.name}</span>
                       </div>
-                      <div className="text-slate-500 flex-shrink-0 ml-2">
+                      <div className="text-slate-500 dark:text-slate-400 flex-shrink-0 ml-2">
                         {currencySymbol}{entry.value.toLocaleString()} <span className="text-slate-400 text-[10px]">({entry.percentage}%)</span>
                       </div>
                     </div>
@@ -500,13 +518,13 @@ export default function Dashboard({
       </div>
 
       {/* Recent Transactions */}
-      <div id="card-recent-transactions" className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xs">
+      <div id="card-recent-transactions" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xs">
         <div className="mb-4 flex items-center justify-between">
-          <h4 className="font-semibold text-slate-900 text-sm">လတ်တလော မှတ်တမ်း</h4>
+          <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">လတ်တလော မှတ်တမ်း</h4>
           <button
             id="dash-btn-view-all-tx"
             onClick={() => onChangeTab('transactions')}
-            className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer min-h-[36px]"
+            className="flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer min-h-[36px]"
           >
             အားလုံးကြည့်မည် <ArrowRight className="h-3.5 w-3.5" />
           </button>
@@ -515,25 +533,25 @@ export default function Dashboard({
         <div>
           {recentTransactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-8">
-              <Calendar className="h-9 w-9 text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">မှတ်တမ်းများ မရှိသေးပါ</p>
+              <Calendar className="h-9 w-9 text-slate-300 dark:text-slate-600 mb-2" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">မှတ်တမ်းများ မရှိသေးပါ</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {recentTransactions.map((tx) => (
                 <div key={`${tx.type}-${tx.id}`} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg font-bold ${
                       tx.type === 'income'
-                        ? 'bg-emerald-50 text-emerald-600'
-                        : 'bg-rose-50 text-rose-600'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400'
                     }`}>
                       {tx.type === 'income' ? <TrendingUp className="h-4.5 w-4.5" /> : <TrendingDown className="h-4.5 w-4.5" />}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-slate-800">{tx.title}</p>
+                      <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{tx.title}</p>
                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs text-slate-400">
-                        <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-medium text-slate-600">
+                        <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[10px] font-medium text-slate-600 dark:text-slate-300">
                           {tx.category}
                         </span>
                         <span>•</span>
@@ -542,7 +560,7 @@ export default function Dashboard({
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className={`text-sm sm:text-base font-bold ${tx.type === 'income' ? 'text-emerald-600' : 'text-slate-800'}`}>
+                    <p className={`text-sm sm:text-base font-bold ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-100'}`}>
                       {tx.type === 'income' ? '+' : '-'}
                       {currencySymbol}
                       {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

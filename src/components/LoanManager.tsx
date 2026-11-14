@@ -325,46 +325,46 @@ export default function LoanManager({
       {/* 3 Overview Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Lent (Receivable) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">ရရန်ရှိ</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">ရရန်ရှိ</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/60">
               <ArrowDownLeft className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-2.5">
-            <div className="text-xl sm:text-2xl font-bold text-emerald-600 tracking-tight">
+            <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
               {currencySymbol}{totalLentRemaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         </div>
 
         {/* Total Borrowed (Payable) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">ပေးရန်ရှိ</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 border border-amber-100">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">ပေးရန်ရှိ</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/60">
               <ArrowUpRight className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-2.5">
-            <div className="text-xl sm:text-2xl font-bold text-amber-600 tracking-tight">
+            <div className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">
               {currencySymbol}{totalBorrowedRemaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         </div>
 
         {/* Active vs Completed count */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">ဆပ်ရန်ကျန်</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB] border border-blue-100">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">ဆပ်ရန်ကျန်</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 border border-blue-100 dark:border-blue-900/60">
               <HandCoins className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-2.5 flex items-baseline gap-2">
-            <div className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              {activeCount} <span className="text-sm font-medium text-slate-500">ခု</span>
+            <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              {activeCount} <span className="text-sm font-medium text-slate-500 dark:text-slate-400">ခု</span>
             </div>
             {completedCount > 0 && (
               <span className="text-[11px] font-medium text-slate-400">
@@ -376,10 +376,10 @@ export default function LoanManager({
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 pt-4 sm:pt-5 pb-3">
-          <h3 className="font-semibold text-slate-800 text-sm">ချေးငွေနှင့် အကြွေးများ</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">ချေးငွေနှင့် အကြွေးများ</h3>
           <button
             id="btn-open-add-loan"
             type="button"
@@ -392,10 +392,10 @@ export default function LoanManager({
         </div>
 
         {/* Filter Controls Row */}
-        <div className="border-b border-slate-100 px-4 sm:px-6 pb-4 sm:pb-5">
+        <div className="border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 pb-4 sm:pb-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-lg sm:col-span-2 lg:col-span-5 overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800 p-1 rounded-lg sm:col-span-2 lg:col-span-5 overflow-x-auto scrollbar-none">
               {(
                 [
                   { id: 'all', label: 'အားလုံး' },
@@ -410,8 +410,8 @@ export default function LoanManager({
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 min-w-[64px] py-1.5 px-2 rounded-md text-xs font-semibold transition-all cursor-pointer whitespace-nowrap text-center ${
                     activeTab === tab.id
-                      ? 'bg-white text-[#2563EB] shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white dark:bg-slate-900 text-[#2563EB] dark:text-blue-400 shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   {tab.label}
@@ -428,7 +428,7 @@ export default function LoanManager({
                 placeholder="ရှာဖွေပါ..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-white hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
+                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
               />
             </div>
 
@@ -439,7 +439,7 @@ export default function LoanManager({
                   id="loan-filter-wallet"
                   value={walletFilter}
                   onChange={(e) => setWalletFilter(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 bg-white hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
+                  className="w-full appearance-none pl-3 pr-8 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
                 >
                   <option value="all">ပိုက်ဆံအိတ်: အားလုံး</option>
                   {wallets.map((w) => (
@@ -457,18 +457,18 @@ export default function LoanManager({
         {/* Content Section */}
         {loans.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-16 px-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-4">
               <HandCoins className="w-7 h-7" />
             </div>
-            <h4 className="font-bold text-slate-800 text-base">မှတ်တမ်း မရှိသေးပါ</h4>
+            <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base">မှတ်တမ်း မရှိသေးပါ</h4>
 
           </div>
         ) : filteredLoans.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-16 px-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-400 mb-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 mb-3">
               <Clock className="w-6 h-6" />
             </div>
-            <h4 className="font-semibold text-slate-800 text-sm">မှတ်တမ်း မတွေ့ပါ</h4>
+            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">မှတ်တမ်း မတွေ့ပါ</h4>
             <button
               id="btn-reset-loan-filters"
               type="button"
@@ -477,7 +477,7 @@ export default function LoanManager({
                 setSearch('');
                 setWalletFilter('all');
               }}
-              className="mt-4 rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+              className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               စစ်ထုတ်မှု ရှင်းလင်းမည်
             </button>
@@ -488,7 +488,7 @@ export default function LoanManager({
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+                  <tr className="bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
                     <th className="py-3 px-6">အမည် / မှတ်ချက်</th>
                     <th className="py-3 px-4">အမျိုးအစား</th>
                     <th className="py-3 px-4">ပိုက်ဆံအိတ်</th>
@@ -499,16 +499,16 @@ export default function LoanManager({
                     <th className="py-3 px-6 text-right">လုပ်ဆောင်ချက်</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs text-slate-700 dark:text-slate-300">
                   {filteredLoans.map((loan) => {
                     const overdue = checkIsOverdue(loan.dueDate, loan.status);
                     const percent = loan.amount > 0 ? Math.min(100, Math.round((loan.paidAmount / loan.amount) * 100)) : 0;
 
                     return (
-                      <tr key={loan.id} className="hover:bg-slate-50/70 transition-colors">
+                      <tr key={loan.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                         {/* Person Name & Note */}
                         <td className="py-3.5 px-6">
-                          <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                             <User className="w-3.5 h-3.5 text-slate-400" />
                             <span>{loan.personName}</span>
                           </div>
@@ -522,36 +522,36 @@ export default function LoanManager({
                         {/* Type Badge */}
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           {loan.type === 'lent' ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                              <ArrowDownLeft className="w-3 h-3 text-emerald-600" /> ရရန်ရှိ
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900">
+                              <ArrowDownLeft className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> ရရန်ရှိ
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/60">
-                              <ArrowUpRight className="w-3 h-3 text-amber-600" /> ပေးရန်ရှိ
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900">
+                              <ArrowUpRight className="w-3 h-3 text-amber-600 dark:text-amber-400" /> ပေးရန်ရှိ
                             </span>
                           )}
                         </td>
 
                         {/* Wallet */}
-                        <td className="py-3.5 px-4 whitespace-nowrap text-slate-600 text-[11px]">
-                          <span className="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+                        <td className="py-3.5 px-4 whitespace-nowrap text-slate-600 dark:text-slate-300 text-[11px]">
+                          <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-medium">
                             <WalletIcon className="w-3 h-3 text-slate-400" />
                             {getWalletName(loan.walletId)}
                           </span>
                         </td>
 
                         {/* Original Amount */}
-                        <td className="py-3.5 px-4 text-right font-bold text-slate-800 whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-right font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">
                           {currencySymbol}{loan.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
 
                         {/* Repaid Progress */}
                         <td className="py-3.5 px-4 whitespace-nowrap min-w-[150px]">
                           <div className="flex justify-between items-center text-[11px] mb-1 font-medium">
-                            <span className="text-slate-500">ဆပ်ပြီး: {currencySymbol}{loan.paidAmount.toLocaleString()}</span>
-                            <span className="font-bold text-slate-700">{percent}%</span>
+                            <span className="text-slate-500 dark:text-slate-400">ဆပ်ပြီး: {currencySymbol}{loan.paidAmount.toLocaleString()}</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-200">{percent}%</span>
                           </div>
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all ${
                                 loan.status === 'completed'
@@ -564,7 +564,7 @@ export default function LoanManager({
                             />
                           </div>
                           <p className="text-[10px] text-slate-400 mt-0.5">
-                            ကျန်ငွေ: <span className="font-semibold text-slate-700">{currencySymbol}{loan.remainingAmount.toLocaleString()}</span>
+                            ကျန်ငွေ: <span className="font-semibold text-slate-700 dark:text-slate-200">{currencySymbol}{loan.remainingAmount.toLocaleString()}</span>
                           </p>
                         </td>
 
@@ -572,12 +572,12 @@ export default function LoanManager({
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           {loan.dueDate ? (
                             <div className="space-y-0.5">
-                              <span className="text-slate-700 text-[11px] font-medium flex items-center gap-1">
+                              <span className="text-slate-700 dark:text-slate-200 text-[11px] font-medium flex items-center gap-1">
                                 <Calendar className="w-3 h-3 text-slate-400" />
                                 {loan.dueDate}
                               </span>
                               {overdue && (
-                                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.2 rounded border border-rose-200 dark:border-rose-900">
                                   <AlertCircle className="w-2.5 h-2.5" /> ရက်လွန်နေပြီ
                                 </span>
                               )}
@@ -590,15 +590,15 @@ export default function LoanManager({
                         {/* Status Badge */}
                         <td className="py-3.5 px-4 text-center whitespace-nowrap">
                           {loan.status === 'completed' ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
                               <CheckCircle2 className="w-3 h-3" /> ကြေအေးပြီး
                             </span>
                           ) : loan.status === 'partial' ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400">
                               <Clock className="w-3 h-3" /> တစ်စိတ်တစ်ပိုင်း
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                               <Clock className="w-3 h-3" /> ဆပ်ရန်ကျန်
                             </span>
                           )}
@@ -612,7 +612,7 @@ export default function LoanManager({
                               <button
                                 type="button"
                                 onClick={() => handleOpenRepaymentModal(loan)}
-                                className="px-2.5 py-1 text-[11px] font-semibold rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer"
+                                className="px-2.5 py-1 text-[11px] font-semibold rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950 transition-colors cursor-pointer"
                                 title="ပြန်ဆပ်မှတ်တမ်း ထည့်မည်"
                               >
                                 {loan.type === 'lent' ? 'လက်ခံမည်' : 'ဆပ်မည်'}
@@ -623,7 +623,7 @@ export default function LoanManager({
                             <button
                               type="button"
                               onClick={() => handleOpenHistoryModal(loan)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                               title="ပြန်ဆပ်မှတ်တမ်းများ ကြည့်မည်"
                             >
                               <History className="w-4 h-4" />
@@ -633,7 +633,7 @@ export default function LoanManager({
                             <button
                               type="button"
                               onClick={() => handleOpenEditModal(loan)}
-                              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                               title="ပြင်ဆင်မည်"
                             >
                               <Edit2 className="w-4 h-4" />
@@ -643,7 +643,7 @@ export default function LoanManager({
                             <button
                               type="button"
                               onClick={() => setDeletingLoanId(loan.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
                               title="ဖျက်ပစ်မည်"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -658,7 +658,7 @@ export default function LoanManager({
             </div>
 
             {/* Mobile Cards View */}
-            <div className="md:hidden divide-y divide-slate-100">
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
               {filteredLoans.map((loan) => {
                 const overdue = checkIsOverdue(loan.dueDate, loan.status);
                 const percent = loan.amount > 0 ? Math.min(100, Math.round((loan.paidAmount / loan.amount) * 100)) : 0;
@@ -668,7 +668,7 @@ export default function LoanManager({
                     {/* Top Row: Person & Type */}
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h4 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                        <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm flex items-center gap-1.5">
                           <User className="w-3.5 h-3.5 text-slate-400" />
                           <span>{loan.personName}</span>
                         </h4>
@@ -678,11 +678,11 @@ export default function LoanManager({
                       </div>
                       <div>
                         {loan.type === 'lent' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900">
                             <ArrowDownLeft className="w-2.5 h-2.5" /> ရရန်ရှိ
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/60">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900">
                             <ArrowUpRight className="w-2.5 h-2.5" /> ပေးရန်ရှိ
                           </span>
                         )}
@@ -690,14 +690,14 @@ export default function LoanManager({
                     </div>
 
                     {/* Middle Info: Amount & Progress */}
-                    <div className="bg-slate-50/80 rounded-lg p-3 space-y-2 border border-slate-100">
+                    <div className="bg-slate-50/80 dark:bg-slate-800/60 rounded-lg p-3 space-y-2 border border-slate-100 dark:border-slate-800">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500">မူလငွေ: {currencySymbol}{loan.amount.toLocaleString()}</span>
-                        <span className="font-bold text-slate-900">
+                        <span className="text-slate-500 dark:text-slate-400">မူလငွေ: {currencySymbol}{loan.amount.toLocaleString()}</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-100">
                           ကျန်ငွေ: {currencySymbol}{loan.remainingAmount.toLocaleString()}
                         </span>
                       </div>
-                      <div className="h-1.5 w-full bg-slate-200/70 rounded-full overflow-hidden">
+                      <div className="h-1.5 w-full bg-slate-200/70 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
                             loan.status === 'completed'
@@ -711,7 +711,7 @@ export default function LoanManager({
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-slate-400">
                         <span>ဆပ်ပြီး: {currencySymbol}{loan.paidAmount.toLocaleString()}</span>
-                        <span className="font-semibold text-slate-700">{percent}%</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">{percent}%</span>
                       </div>
                     </div>
 
@@ -777,16 +777,16 @@ export default function LoanManager({
 
       {/* Add / Edit Loan Modal */}
       {isOpenLoanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-base">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                 {editingLoan ? 'ချေးငွေ ပြင်ဆင်မည်' : 'ချေးငွေ အသစ်ထည့်မည်'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsOpenLoanModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer p-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -795,15 +795,15 @@ export default function LoanManager({
             <form onSubmit={handleSubmitLoan} className="mt-4 space-y-4">
               {/* Type Switcher */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">အမျိုးအစား</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">အမျိုးအစား</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setLoanType('lent')}
                     className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       loanType === 'lent'
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-2xs'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 shadow-2xs'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
                     <ArrowDownLeft className="w-3.5 h-3.5" />
@@ -814,8 +814,8 @@ export default function LoanManager({
                     onClick={() => setLoanType('borrowed')}
                     className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       loanType === 'borrowed'
-                        ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-2xs'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 shadow-2xs'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
                     <ArrowUpRight className="w-3.5 h-3.5" />
@@ -826,7 +826,7 @@ export default function LoanManager({
 
               {/* Person Name */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   လူအမည် <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -834,14 +834,14 @@ export default function LoanManager({
                   placeholder="အမည်..."
                   value={personName}
                   onChange={(e) => setPersonName(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   required
                 />
               </div>
 
               {/* Amount */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   ငွေပမာဏ ({currencySymbol.trim()}) <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -850,7 +850,7 @@ export default function LoanManager({
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -858,13 +858,13 @@ export default function LoanManager({
               {/* Wallet Select */}
               {wallets.length > 0 && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     ပိုက်ဆံအိတ် <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={walletId}
                     onChange={(e) => setWalletId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-sm bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm bg-white dark:bg-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer"
                     required
                   >
                     {wallets.map((w) => (
@@ -879,49 +879,49 @@ export default function LoanManager({
               {/* Dates */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     ရက်စွဲ <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     သတ်မှတ်ရက်
                   </label>
                   <input
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
                   />
                 </div>
               </div>
 
               {/* Note */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">မှတ်ချက်</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">မှတ်ချက်</label>
                 <input
                   type="text"
                   placeholder="မှတ်ချက်..."
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               {/* Modal Actions */}
-              <div className="flex gap-2.5 pt-3 border-t border-slate-100">
+              <div className="flex gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsOpenLoanModal(false)}
                   disabled={isSubmitting}
-                  className="flex-1 py-2 px-4 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   မလုပ်တော့ပါ
                 </button>
@@ -941,30 +941,30 @@ export default function LoanManager({
 
       {/* Repayment Modal */}
       {isOpenRepaymentModal && selectedLoanForRepayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-base">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                 {selectedLoanForRepayment.type === 'lent' ? 'ငွေလက်ခံမည်' : 'ငွေဆပ်မည်'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsOpenRepaymentModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer p-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Quick Loan Card Banner */}
-            <div className="mt-4 bg-slate-50 border border-slate-200/80 rounded-xl p-3 space-y-1">
+            <div className="mt-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 rounded-xl p-3 space-y-1">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-slate-800">{selectedLoanForRepayment.personName}</span>
-                <span className="text-slate-500">မူလ: {currencySymbol}{selectedLoanForRepayment.amount.toLocaleString()}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-100">{selectedLoanForRepayment.personName}</span>
+                <span className="text-slate-500 dark:text-slate-400">မူလ: {currencySymbol}{selectedLoanForRepayment.amount.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/60">
-                <span className="text-slate-600">ကျန်ရှိငွေ:</span>
-                <span className="font-bold text-blue-600 text-sm">
+              <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/60 dark:border-slate-700">
+                <span className="text-slate-600 dark:text-slate-300">ကျန်ရှိငွေ:</span>
+                <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
                   {currencySymbol}{selectedLoanForRepayment.remainingAmount.toLocaleString()}
                 </span>
               </div>
@@ -974,13 +974,13 @@ export default function LoanManager({
               {/* Repayment Amount */}
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-semibold text-slate-700">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     ပမာဏ ({currencySymbol.trim()}) <span className="text-rose-500">*</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setRepaymentAmount(selectedLoanForRepayment.remainingAmount.toString())}
-                    className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                    className="text-[11px] font-semibold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
                   >
                     အပြည့်ဆပ်မည်
                   </button>
@@ -992,7 +992,7 @@ export default function LoanManager({
                   value={repaymentAmount}
                   onChange={(e) => setRepaymentAmount(e.target.value)}
                   max={selectedLoanForRepayment.remainingAmount}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -1000,13 +1000,13 @@ export default function LoanManager({
               {/* Wallet Select */}
               {wallets.length > 0 && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     ပိုက်ဆံအိတ် <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={repaymentWalletId}
                     onChange={(e) => setRepaymentWalletId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-sm bg-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm bg-white dark:bg-slate-800 focus:outline-none focus:border-blue-500 cursor-pointer"
                     required
                   >
                     {wallets.map((w) => (
@@ -1020,37 +1020,37 @@ export default function LoanManager({
 
               {/* Date */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   ရက်စွဲ <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="date"
                   value={repaymentDate}
                   onChange={(e) => setRepaymentDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
                   required
                 />
               </div>
 
               {/* Note */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">မှတ်ချက်</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">မှတ်ချက်</label>
                 <input
                   type="text"
                   placeholder="မှတ်ချက်..."
                   value={repaymentNote}
                   onChange={(e) => setRepaymentNote(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2.5 pt-3 border-t border-slate-100">
+              <div className="flex gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsOpenRepaymentModal(false)}
                   disabled={isSubmitting}
-                  className="flex-1 py-2 px-4 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   မလုပ်တော့ပါ
                 </button>
@@ -1070,19 +1070,19 @@ export default function LoanManager({
 
       {/* Repayment History Modal */}
       {isOpenHistoryModal && selectedLoanForHistory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">ပြန်ဆပ်မှတ်တမ်း</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">ပြန်ဆပ်မှတ်တမ်း</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {selectedLoanForHistory.personName} ({selectedLoanForHistory.type === 'lent' ? 'ရရန်ရှိ' : 'ပေးရန်ရှိ'})
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpenHistoryModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer p-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1098,10 +1098,10 @@ export default function LoanManager({
                 selectedLoanForHistory.repayments.map((rep) => (
                   <div
                     key={rep.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs"
+                    className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs"
                   >
                     <div>
-                      <div className="font-bold text-slate-900">
+                      <div className="font-bold text-slate-900 dark:text-slate-100">
                         {currencySymbol}{rep.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
@@ -1112,14 +1112,14 @@ export default function LoanManager({
                         <span>{getWalletName(rep.walletId)}</span>
                       </div>
                       {rep.note && (
-                        <p className="text-[11px] text-slate-500 mt-1 italic">"{rep.note}"</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 italic">"{rep.note}"</p>
                       )}
                     </div>
 
                     <button
                       type="button"
                       onClick={() => handleDeleteRepaymentItem(rep.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg transition-colors cursor-pointer"
                       title="ဤပြန်ဆပ်မှုကို ပယ်ဖျက်မည်"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1129,11 +1129,11 @@ export default function LoanManager({
               )}
             </div>
 
-            <div className="mt-5 pt-3 border-t border-slate-100 flex justify-end">
+            <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsOpenHistoryModal(false)}
-                className="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                className="py-2 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
               >
                 ပိတ်မည်
               </button>
@@ -1144,20 +1144,20 @@ export default function LoanManager({
 
       {/* Delete Confirmation Modal */}
       {deletingLoanId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-slate-100 text-center animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-600 mx-auto mb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-100 dark:border-slate-800 text-center animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto mb-3">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-slate-900 text-base">ဖျက်ပစ်မည်လား?</h4>
-            <p className="text-xs text-slate-500 mt-1.5">
+            <h4 className="font-bold text-slate-900 dark:text-slate-100 text-base">ဖျက်ပစ်မည်လား?</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
               ဤချေးငွေမှတ်တမ်းကို အပြီးတိုင် ဖျက်ပစ်ပါမည်။
             </p>
             <div className="flex gap-2.5 mt-5">
               <button
                 type="button"
                 onClick={() => setDeletingLoanId(null)}
-                className="flex-1 py-2 px-4 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex-1 py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 မလုပ်တော့ပါ
               </button>

@@ -86,8 +86,8 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
     sign: isIncome ? '+' : '-',
     textColor: isIncome ? 'text-[#059669]' : 'text-[#DC2626]',
     badgeClass: isIncome
-      ? 'bg-emerald-50 text-[#059669]'
-      : 'bg-rose-50 text-[#DC2626]',
+      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-[#059669] dark:text-emerald-400'
+      : 'bg-rose-50 dark:bg-rose-950/60 text-[#DC2626] dark:text-rose-400',
     placeholderTitle: isIncome ? 'ဥပမာ- လစဉ်လစာငွေ' : 'ဥပမာ- စားသောက်စရိတ်',
   };
 
@@ -314,10 +314,10 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
   return (
     <div className="space-y-6">
       {/* table container */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
         {/* header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 pt-4 sm:pt-5 pb-3">
-          <h3 className="font-semibold text-slate-800 text-sm">{config.title}</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{config.title}</h3>
           <button
             id={`btn-open-add-${idPrefix}`}
             onClick={openAddModal}
@@ -329,7 +329,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
 
         {/* Filter Controls Row */}
         {items.length > 0 && (
-          <div className="border-b border-slate-100 px-4 sm:px-6 pb-4 sm:pb-5">
+          <div className="border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 pb-4 sm:pb-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
               {/* Search */}
               <div className={`relative sm:col-span-2 ${wallets.length > 0 ? 'lg:col-span-4' : 'lg:col-span-5'}`}>
@@ -340,7 +340,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   placeholder="ရှာဖွေပါ..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-white hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
+                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
                 />
               </div>
 
@@ -350,7 +350,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   id={`${idPrefix}-filter-category`}
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 bg-white hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
+                  className="w-full appearance-none pl-3 pr-8 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
                 >
                   <option value="all">ခေါင်းစဉ်: အားလုံး</option>
                   {relevantCategories.map((c) => (
@@ -369,7 +369,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     id={`${idPrefix}-filter-wallet`}
                     value={walletFilter}
                     onChange={(e) => setWalletFilter(e.target.value)}
-                    className="w-full appearance-none pl-3 pr-8 py-2 bg-white hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
+                    className="w-full appearance-none pl-3 pr-8 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
                   >
                     <option value="all">ပိုက်ဆံအိတ်: အားလုံး</option>
                     {wallets.map((w) => (
@@ -391,10 +391,10 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     title="စတင်ရက်"
-                    className="w-full min-w-0 px-2.5 py-2 bg-white hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
+                    className="w-full min-w-0 px-2.5 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
                   />
                 </div>
-                <span className="text-slate-300 text-xs font-semibold select-none flex-shrink-0">–</span>
+                <span className="text-slate-300 dark:text-slate-600 text-xs font-semibold select-none flex-shrink-0">–</span>
                 <div className="relative flex-1 min-w-0">
                   <input
                     id={`${idPrefix}-end-date`}
@@ -402,7 +402,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     title="ပြီးဆုံးရက်"
-                    className="w-full min-w-0 px-2.5 py-2 bg-white hover:bg-slate-50 focus:bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
+                    className="w-full min-w-0 px-2.5 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
                   />
                 </div>
               </div>
@@ -411,30 +411,30 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
         )}
 
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-t border-slate-100">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-4">
+          <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-4">
               <Calendar className="w-7 h-7" />
             </div>
-            <h4 className="font-bold text-slate-800 text-base">{config.emptyTitle}</h4>
+            <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base">{config.emptyTitle}</h4>
 
             <button
               id={`btn-empty-state-add-${idPrefix}`}
               onClick={openAddModal}
-              className="mt-4 rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-[#2563EB] hover:bg-slate-50 transition-colors cursor-pointer"
+              className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-[#2563EB] dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               {config.addBtn}
             </button>
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-16 px-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-400 mb-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 mb-3">
               <Clock className="w-6 h-6" />
             </div>
-            <h4 className="font-semibold text-slate-800 text-sm">မှတ်တမ်း မတွေ့ပါ</h4>
+            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">မှတ်တမ်း မတွေ့ပါ</h4>
             <button
               id={`btn-reset-filters-${idPrefix}`}
               onClick={handleClearFilters}
-              className="mt-4 rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+              className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               စစ်ထုတ်မှု ရှင်းလင်းမည်
             </button>
@@ -445,10 +445,10 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+                  <tr className="bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
                     <th
                       onClick={() => handleSort('title')}
-                      className="py-3 px-6 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                      className="py-3 px-6 cursor-pointer select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
                         <span>ခေါင်းစဉ်</span>
@@ -457,7 +457,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     </th>
                     <th
                       onClick={() => handleSort('category')}
-                      className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                      className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
                         <span>အမျိုးအစား</span>
@@ -466,7 +466,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     </th>
                     <th
                       onClick={() => handleSort('date')}
-                      className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                      className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
                         <span>ရက်စွဲ</span>
@@ -475,7 +475,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     </th>
                     <th
                       onClick={() => handleSort('amount')}
-                      className="py-3 px-4 text-right cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                      className="py-3 px-4 text-right cursor-pointer select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors group"
                     >
                       <div className="flex items-center justify-end gap-1.5">
                         <span>ပမာဏ</span>
@@ -485,14 +485,14 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     <th className="py-3 px-6 text-center">လုပ်ဆောင်ချက်</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {paginatedItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors text-sm text-slate-700">
-                      <td className="py-4 px-6 font-semibold text-[#111827]">
+                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors text-sm text-slate-700 dark:text-slate-300">
+                      <td className="py-4 px-6 font-semibold text-[#111827] dark:text-slate-100">
                         <div className="flex items-center gap-2">
                           <span>{item.title}</span>
                           {getWalletName(item.walletId) && (
-                            <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200/60">
+                            <span className="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700">
                               {getWalletName(item.walletId)}
                             </span>
                           )}
@@ -503,7 +503,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                           {item.category}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-slate-500 text-xs">{item.date}</td>
+                      <td className="py-4 px-4 text-slate-500 dark:text-slate-400 text-xs">{item.date}</td>
                       <td className={`py-4 px-4 font-semibold ${config.textColor} text-right`}>
                         {config.sign}{currencySymbol}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
@@ -513,7 +513,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                             id={`btn-edit-${idPrefix}-${item.id}`}
                             onClick={() => openEditModal(item)}
                             title="ပြင်ဆင်မည်"
-                            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors focus:outline-none cursor-pointer"
+                            className="rounded-lg p-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100 transition-colors focus:outline-none cursor-pointer"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
@@ -521,7 +521,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                             id={`btn-delete-${idPrefix}-${item.id}`}
                             onClick={() => setDeletingId(item.id)}
                             title="ဖျက်မည်"
-                            className="rounded-lg p-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors focus:outline-none cursor-pointer"
+                            className="rounded-lg p-1.5 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-600 dark:hover:text-rose-400 transition-colors focus:outline-none cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -530,7 +530,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-slate-50 border-t-2 border-slate-200 font-semibold text-slate-800 text-sm">
+                <tfoot className="bg-slate-50 dark:bg-slate-800/70 border-t-2 border-slate-200 dark:border-slate-700 font-semibold text-slate-800 dark:text-slate-100 text-sm">
                   <tr>
                     <td colSpan={3} className="py-3.5 px-6">
                       {config.totalLabel(filteredItems.length)}
@@ -545,12 +545,12 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
             </div>
 
             {/* Mobile Card List */}
-            <div className="md:hidden divide-y divide-slate-100">
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
               {paginatedItems.map((item) => (
                 <div key={item.id} className="p-4 space-y-2.5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-slate-900 text-sm break-words">{item.title}</p>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm break-words">{item.title}</p>
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${config.badgeClass}`}>
                           {item.category}
@@ -558,13 +558,13 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                         {getWalletName(item.walletId) && (
                           <>
                             <span className="text-slate-400 text-xs">•</span>
-                            <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                            <span className="text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded">
                               {getWalletName(item.walletId)}
                             </span>
                           </>
                         )}
                         <span className="text-slate-400 text-xs">•</span>
-                        <span className="text-slate-500 text-xs">{item.date}</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">{item.date}</span>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -574,18 +574,18 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-50">
+                  <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-50 dark:border-slate-800">
                     <button
                       id={`btn-edit-${idPrefix}-mobile-${item.id}`}
                       onClick={() => openEditModal(item)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer min-h-[36px]"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[36px]"
                     >
                       <Edit3 className="w-3.5 h-3.5" /> ပြင်ဆင်မည်
                     </button>
                     <button
                       id={`btn-delete-${idPrefix}-mobile-${item.id}`}
                       onClick={() => setDeletingId(item.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-100 bg-rose-50/60 text-xs font-medium text-rose-600 hover:bg-rose-100 transition-colors cursor-pointer min-h-[36px]"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-100 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/50 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 transition-colors cursor-pointer min-h-[36px]"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> ဖျက်မည်
                     </button>
@@ -594,8 +594,8 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
               ))}
 
               {/* Mobile Total Footer */}
-              <div className="p-4 bg-slate-50 border-t-2 border-slate-200 flex items-center justify-between font-semibold text-sm">
-                <span className="text-slate-700">{config.totalLabel(filteredItems.length)}</span>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/70 border-t-2 border-slate-200 dark:border-slate-700 flex items-center justify-between font-semibold text-sm">
+                <span className="text-slate-700 dark:text-slate-200">{config.totalLabel(filteredItems.length)}</span>
                 <span className={`${config.textColor} text-base font-bold`}>
                   {config.sign}{currencySymbol}{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
@@ -618,16 +618,16 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
       {/* Slide-over / Modal Form */}
       {isOpenForm && (
         <div id={`${idPrefix}-form-modal`} className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs animate-fade-in" onClick={() => setIsOpenForm(false)} />
-          <div className="relative bg-white rounded-t-2xl sm:rounded-xl max-w-lg w-full p-5 sm:p-6 border border-slate-200 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150 shadow-xl max-h-[92vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs animate-fade-in" onClick={() => setIsOpenForm(false)} />
+          <div className="relative bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-xl max-w-lg w-full p-5 sm:p-6 border border-slate-200 dark:border-slate-800 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150 shadow-xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[#111827]">
+              <h3 className="text-base font-semibold text-[#111827] dark:text-slate-100">
                 {editingId ? config.modalTitleEdit : config.modalTitleAdd}
               </h3>
               <button
                 id={`btn-close-${idPrefix}-modal`}
                 onClick={() => setIsOpenForm(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 focus:outline-none cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -635,7 +635,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
                   ခေါင်းစဉ် *
                 </label>
                 <input
@@ -645,13 +645,13 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   placeholder={config.placeholderTitle}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
+                  className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
                     ပမာဏ ({currencySymbol.trim()}) *
                   </label>
                   <input
@@ -662,12 +662,12 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     placeholder="0.00"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
+                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
                     အမျိုးအစား *
                   </label>
                   <select
@@ -675,7 +675,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     required
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
+                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
                   >
                     <option value="" disabled>အမျိုးအစား ရွေးချယ်ပါ</option>
                     {relevantCategories.map((cat) => (
@@ -689,14 +689,14 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
 
               {wallets.length > 0 && (
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
                     ပိုက်ဆံအိတ် *
                   </label>
                   <select
                     id={`${idPrefix}-input-wallet`}
                     value={walletId}
                     onChange={(e) => setWalletId(e.target.value)}
-                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
+                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
                   >
                     {wallets.map((w) => (
                       <option key={w.id} value={w.id}>
@@ -708,7 +708,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
               )}
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
                   ရက်စွဲ *
                 </label>
                 <input
@@ -717,16 +717,16 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors cursor-pointer"
+                  className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors cursor-pointer"
                 />
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   id={`btn-cancel-${idPrefix}-form`}
                   type="button"
                   onClick={() => setIsOpenForm(false)}
-                  className="px-4 py-2.5 sm:py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer min-h-[44px] sm:min-h-0"
+                  className="px-4 py-2.5 sm:py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] sm:min-h-0"
                 >
                   မလုပ်တော့ပါ
                 </button>
@@ -747,15 +747,15 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
       {/* Confirmation Dialog */}
       {deletingId && (
         <div id={`delete-${idPrefix}-confirm-modal`} className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs animate-fade-in" onClick={() => setDeletingId(null)} />
-          <div className="relative bg-white rounded-xl max-w-sm w-full p-6 border border-slate-200 flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in-95 duration-150 shadow-lg">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-[#DC2626]">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs animate-fade-in" onClick={() => setDeletingId(null)} />
+          <div className="relative bg-white dark:bg-slate-900 rounded-xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in-95 duration-150 shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/60 text-[#DC2626] dark:text-rose-400">
               <AlertTriangle className="w-5 h-5" />
             </div>
             
             <div>
-              <h3 className="text-base font-semibold text-[#111827]">{config.deleteModalTitle}</h3>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              <h3 className="text-base font-semibold text-[#111827] dark:text-slate-100">{config.deleteModalTitle}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
                 {config.deleteModalDesc}
               </p>
             </div>
@@ -764,7 +764,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
               <button
                 id={`btn-delete-${idPrefix}-abort`}
                 onClick={() => setDeletingId(null)}
-                className="flex-1 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 မလုပ်တော့ပါ
               </button>

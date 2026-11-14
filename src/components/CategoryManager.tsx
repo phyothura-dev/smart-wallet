@@ -113,10 +113,10 @@ export default function CategoryManager({
   return (
     <div className="space-y-6">
       {/* main card */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden p-4 sm:p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden p-4 sm:p-6">
 
         {/* toggle tabs */}
-        <div className="flex border-b border-slate-200 mb-6">
+        <div className="flex border-b border-slate-200 dark:border-slate-800 mb-6">
           <button
             id="tab-income-categories"
             onClick={() => {
@@ -125,8 +125,8 @@ export default function CategoryManager({
             }}
             className={`flex-1 sm:flex-initial pb-3 text-xs sm:text-sm font-medium border-b-2 px-3 sm:px-4 transition-all cursor-pointer text-center min-h-[40px] flex items-center justify-center ${
               activeType === 'income'
-                ? 'border-[#2563EB] text-[#2563EB] font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-[#2563EB] text-[#2563EB] dark:text-blue-400 font-semibold'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
             ဝင်ငွေ
@@ -139,8 +139,8 @@ export default function CategoryManager({
             }}
             className={`flex-1 sm:flex-initial pb-3 text-xs sm:text-sm font-medium border-b-2 px-3 sm:px-4 transition-all cursor-pointer text-center min-h-[40px] flex items-center justify-center ${
               activeType === 'expense'
-                ? 'border-[#2563EB] text-[#2563EB] font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-[#2563EB] text-[#2563EB] dark:text-blue-400 font-semibold'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
             ထွက်ငွေ
@@ -156,7 +156,7 @@ export default function CategoryManager({
             placeholder="ခေါင်းစဉ်အမည်..."
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
-            className="flex-1 px-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors min-h-[42px] sm:min-h-0"
+            className="flex-1 px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors min-h-[42px] sm:min-h-0"
           />
           <button
             id="btn-add-category"
@@ -183,7 +183,7 @@ export default function CategoryManager({
               {filteredCategories.map((cat) => (
                 <div
                   key={cat.id}
-                  className="flex items-center justify-between p-3 sm:p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg transition-all"
+                  className="flex items-center justify-between p-3 sm:p-3.5 bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg transition-all"
                 >
                   {editingId === cat.id ? (
                     <div className="flex items-center gap-2 w-full">
@@ -193,34 +193,34 @@ export default function CategoryManager({
                         required
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
-                        className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 text-sm sm:text-xs focus:ring-1 focus:ring-blue-500 min-h-[38px] sm:min-h-0"
+                        className="flex-1 px-3 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-sm sm:text-xs focus:ring-1 focus:ring-blue-500 min-h-[38px] sm:min-h-0"
                       />
                       <button
                         id={`btn-save-rename-${cat.id}`}
                         onClick={() => handleSaveRename(cat.id)}
                         disabled={isSavingEdit}
-                        className="p-2 rounded-md text-emerald-600 hover:bg-emerald-50 focus:outline-none cursor-pointer"
+                        className="p-2 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 focus:outline-none cursor-pointer"
                       >
                         <Check className="w-4 h-4" />
                       </button>
                       <button
                         id={`btn-cancel-rename-${cat.id}`}
                         onClick={() => setEditingId(null)}
-                        className="p-2 rounded-md text-slate-400 hover:bg-slate-200 focus:outline-none cursor-pointer"
+                        className="p-2 rounded-md text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none cursor-pointer"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                   ) : (
                     <>
-                      <span className="text-sm font-medium text-slate-800 truncate pr-2">{cat.name}</span>
+                      <span className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate pr-2">{cat.name}</span>
                       
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <button
                           id={`btn-start-rename-${cat.id}`}
                           onClick={() => handleStartEdit(cat)}
                           title="ပြင်ဆင်မည်"
-                          className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors focus:outline-none cursor-pointer"
+                          className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none cursor-pointer"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
@@ -228,7 +228,7 @@ export default function CategoryManager({
                           id={`btn-trigger-delete-${cat.id}`}
                           onClick={() => setDeletingId(cat.id)}
                           title="ဖျက်မည်"
-                          className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors focus:outline-none cursor-pointer"
+                          className="p-2 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors focus:outline-none cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -245,15 +245,15 @@ export default function CategoryManager({
       {/* Confirmation Dialog */}
       {deletingId && (
         <div id="delete-category-confirm-modal" className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs animate-fade-in" onClick={() => setDeletingId(null)} />
-          <div className="relative bg-white rounded-xl max-w-sm w-full p-6 border border-slate-200 flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in-95 duration-150 shadow-lg">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-[#DC2626]">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs animate-fade-in" onClick={() => setDeletingId(null)} />
+          <div className="relative bg-white dark:bg-slate-900 rounded-xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in-95 duration-150 shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/60 text-[#DC2626] dark:text-rose-400">
               <Trash2 className="w-5 h-5" />
             </div>
             
             <div>
-              <h3 className="text-base font-semibold text-[#111827]">ခေါင်းစဉ် ဖျက်မည်လား?</h3>
-              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+              <h3 className="text-base font-semibold text-[#111827] dark:text-slate-100">ခေါင်းစဉ် ဖျက်မည်လား?</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
                 ဤခေါင်းစဉ်ကို ဖျက်ပစ်ပါမည်။
               </p>
             </div>
@@ -262,7 +262,7 @@ export default function CategoryManager({
               <button
                 id="btn-delete-category-abort"
                 onClick={() => setDeletingId(null)}
-                className="flex-1 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 မလုပ်တော့ပါ
               </button>

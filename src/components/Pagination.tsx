@@ -48,7 +48,7 @@ export default function Pagination({
   if (totalItems === 0) return null;
 
   return (
-    <div className="flex items-center justify-end py-4 px-3 sm:px-4 bg-white border-t border-slate-100 rounded-b-2xl">
+    <div className="flex items-center justify-end py-4 px-3 sm:px-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 rounded-b-2xl">
       {/* Pagination Controls */}
       <div className="flex items-center gap-1">
         {/* First Page */}
@@ -57,7 +57,7 @@ export default function Pagination({
           onClick={() => onPageChange(1)}
           disabled={currentPage <= 1}
           title="ပထမဆုံး စာမျက်နှာ"
-          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronsLeft className="w-4 h-4" />
         </button>
@@ -68,7 +68,7 @@ export default function Pagination({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
           title="ရှေ့စာမျက်နှာ"
-          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -93,7 +93,7 @@ export default function Pagination({
                 className={`min-w-8 h-8 px-2 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-xs'
-                    : 'border border-slate-200 text-slate-700 hover:bg-slate-100'
+                    : 'border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 {p}
@@ -108,7 +108,7 @@ export default function Pagination({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
           title="နောက်စာမျက်နှာ"
-          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -119,7 +119,7 @@ export default function Pagination({
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage >= totalPages}
           title="နောက်ဆုံး စာမျက်နှာ"
-          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronsRight className="w-4 h-4" />
         </button>

@@ -52,23 +52,23 @@ export default function Sidebar({
       {/* Sidebar Container */}
       <aside
         id="app-sidebar"
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 sm:w-64 max-w-[85vw] flex-col border-r border-slate-200 bg-white transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 sm:w-64 max-w-[85vw] flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
           isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
         {/* Header/Logo */}
-        <div id="sidebar-header" className="flex h-16 items-center justify-between px-5 sm:px-6 border-b border-slate-200 bg-white">
+        <div id="sidebar-header" className="flex h-16 items-center justify-between px-5 sm:px-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
           <div className="flex items-center gap-3">
             <img
               src="/logo.png"
               alt="SmartWallet"
-              className="h-9 w-9 rounded-xl object-contain shadow-xs border border-blue-100/60"
+              className="h-9 w-9 rounded-xl object-contain shadow-xs border border-blue-100/60 dark:border-slate-700"
             />
             <div className="flex flex-col">
-              <span className="text-[17px] font-bold text-slate-900 tracking-tight leading-tight font-sans">
+              <span className="text-[17px] font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-tight font-sans">
                 SmartWallet
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 tracking-wide uppercase">
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 tracking-wide uppercase">
                 Finance Hub
               </span>
             </div>
@@ -78,7 +78,7 @@ export default function Sidebar({
           <button
             id="btn-close-mobile-sidebar"
             onClick={onCloseMobile}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 lg:hidden focus:outline-none cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 lg:hidden focus:outline-none cursor-pointer"
             aria-label="Close sidebar"
           >
             <X className="h-5 w-5" />
@@ -97,12 +97,12 @@ export default function Sidebar({
                 onClick={() => handleTabClick(item.id)}
                 className={`flex w-full min-h-[44px] items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${
                   isActive
-                    ? 'bg-[#F3F4F6] text-[#2563EB] font-semibold'
-                    : 'text-[#4B5563] hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-[#F3F4F6] dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 font-semibold'
+                    : 'text-[#4B5563] dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
                 <IconComponent
-                  className={`h-5 w-5 ${isActive ? 'text-[#2563EB]' : 'text-slate-400'}`}
+                  className={`h-5 w-5 ${isActive ? 'text-[#2563EB] dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
                 />
                 {item.label}
               </button>
@@ -111,7 +111,7 @@ export default function Sidebar({
         </nav>
 
         {/* User Profile Info & Sign Out */}
-        <div className="border-t border-slate-200 p-4 sm:p-5 bg-slate-50/50">
+        <div className="border-t border-slate-200 dark:border-slate-800 p-4 sm:p-5 bg-slate-50/50 dark:bg-slate-900/80">
           <div className="flex items-center gap-3">
             <img
               id="sidebar-user-avatar"
@@ -122,13 +122,13 @@ export default function Sidebar({
               }
               referrerPolicy="no-referrer"
               alt="Profile"
-              className="h-9 w-9 rounded-full border border-slate-200 bg-slate-50 object-cover flex-shrink-0"
+              className="h-9 w-9 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 object-cover flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900">
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {profile?.fullName || 'User'}
               </p>
-              <p className="truncate text-xs text-[#6B7280]">
+              <p className="truncate text-xs text-[#6B7280] dark:text-slate-400">
                 {profile?.email || 'user@example.com'}
               </p>
             </div>
@@ -142,9 +142,9 @@ export default function Sidebar({
                 onInstallApp();
                 onCloseMobile();
               }}
-              className="mt-3 flex w-full min-h-[44px] items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#2563EB] bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer border border-blue-100"
+              className="mt-3 flex w-full min-h-[44px] items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#2563EB] dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-950 transition-colors cursor-pointer border border-blue-100 dark:border-blue-900"
             >
-              <Download className="h-5 w-5 text-[#2563EB] flex-shrink-0" />
+              <Download className="h-5 w-5 text-[#2563EB] dark:text-blue-400 flex-shrink-0" />
               App သွင်းမည် 
             </button>
           )}
@@ -155,9 +155,9 @@ export default function Sidebar({
               onSignOut();
               onCloseMobile();
             }}
-            className="mt-3 flex w-full min-h-[44px] items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
+            className="mt-3 flex w-full min-h-[44px] items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-700 dark:hover:text-rose-300 transition-colors cursor-pointer"
           >
-            <LogOut className="h-5 w-5 text-rose-500 flex-shrink-0" />
+            <LogOut className="h-5 w-5 text-rose-500 dark:text-rose-400 flex-shrink-0" />
             အကောင့်မှ ထွက်မည်
           </button>
         </div>

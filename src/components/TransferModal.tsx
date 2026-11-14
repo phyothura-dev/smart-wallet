@@ -94,21 +94,21 @@ export default function TransferModal({
       id="modal-transfer-form"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
     >
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+            <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
               <ArrowRightLeft className="w-4 h-4" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
               ငွေလွှဲမည်
             </h3>
           </div>
           <button
             id="btn-close-transfer-modal"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -118,7 +118,7 @@ export default function TransferModal({
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {/* from wallet */}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
               လွှဲမည့် အကောင့် *
             </label>
             <select
@@ -132,7 +132,7 @@ export default function TransferModal({
                   if (other) setTransferTo(other.id);
                 }
               }}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
+              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 cursor-pointer"
             >
               {wallets.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -144,14 +144,14 @@ export default function TransferModal({
 
           {/* to wallet */}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
               လက်ခံမည့် အကောင့် *
             </label>
             <select
               id="select-transfer-to"
               value={transferTo}
               onChange={(e) => setTransferTo(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
+              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 cursor-pointer"
             >
               {wallets
                 .filter((w) => w.id !== transferFrom)
@@ -165,7 +165,7 @@ export default function TransferModal({
 
           {/* amount */}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
               ပမာဏ ({currencySymbol.trim()}) *
             </label>
             <input
@@ -177,13 +177,13 @@ export default function TransferModal({
               placeholder="0.00"
               value={transferAmount}
               onChange={(e) => setTransferAmount(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800"
             />
           </div>
 
           {/* date */}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
               ရက်စွဲ *
             </label>
             <input
@@ -192,16 +192,16 @@ export default function TransferModal({
               required
               value={transferDate}
               onChange={(e) => setTransferDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
+              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 cursor-pointer"
             />
           </div>
 
           {/* buttons */}
-          <div className="flex gap-3 justify-end pt-3 border-t border-slate-100">
+          <div className="flex gap-3 justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               မလုပ်တော့ပါ
             </button>

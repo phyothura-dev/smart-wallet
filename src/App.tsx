@@ -3,6 +3,7 @@ import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { useUserData } from './hooks/useUserData';
 import { usePWA } from './hooks/usePWA';
+import { useTheme } from './hooks/useTheme';
 
 // layout components
 import Auth from './components/Auth';
@@ -25,8 +26,8 @@ const LoanManager = lazy(() => import('./components/LoanManager'));
 
 function ViewLoadingSpinner() {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-slate-500">
-      <RefreshCw className="w-6 h-6 animate-spin text-blue-600 mb-2" />
+    <div className="flex flex-col items-center justify-center py-24 text-slate-500 dark:text-slate-400">
+      <RefreshCw className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 mb-2" />
       <p className="text-xs font-semibold">စာမျက်နှာ ဖွင့်နေပါသည်...</p>
     </div>
   );
@@ -43,6 +44,9 @@ export default function App() {
 
   // pwa state
   const { isInstallable, isOnline, isUpdateAvailable, installApp, updateApp } = usePWA();
+
+  // theme state
+  const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
 
   // toast state
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -129,14 +133,14 @@ export default function App() {
   // auth loading
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6">
         <img
           src="/logo.png"
           alt="SmartWallet"
           className="h-14 w-14 object-contain mb-4 animate-bounce drop-shadow-sm rounded-2xl"
         />
-        <div className="flex items-center gap-2 text-slate-600 text-sm font-semibold">
-          <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm font-semibold">
+          <RefreshCw className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
           Loading secure session...
         </div>
       </div>
@@ -242,14 +246,14 @@ export default function App() {
   // data loading spinner
   if (dataLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6">
         <img
           src="/logo.png"
           alt="SmartWallet"
           className="h-14 w-14 object-contain mb-4 animate-pulse drop-shadow-sm rounded-2xl"
         />
-        <div className="flex items-center gap-2 text-slate-600 text-sm font-semibold">
-          <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm font-semibold">
+          <RefreshCw className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
           အချက်အလက်များကို ချိတ်ဆက်ရယူနေပါသည်...
         </div>
       </div>
@@ -257,7 +261,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#F9FAFB]">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#F9FAFB] dark:bg-slate-950 transition-colors duration-200">
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={handleCloseToast} />
 
@@ -286,6 +290,8 @@ export default function App() {
           isOnline={isOnline}
           isUpdateAvailable={isUpdateAvailable}
           onUpdateApp={updateApp}
+          resolvedTheme={resolvedTheme}
+          onToggleTheme={toggleTheme}
         />
 
         {/* Scrollable layout sandbox */}
@@ -300,6 +306,7 @@ export default function App() {
                   transfers={transfers}
                   loans={loans}
                   profile={profile}
+                  resolvedTheme={resolvedTheme}
                   onChangeTab={setCurrentTab}
                   onAddTransfer={handleAddTransfer}
                   onShowToast={handleShowToast}
@@ -388,6 +395,8 @@ export default function App() {
                   profile={profile}
                   onUpdateProfile={handleUpdateProfile}
                   onShowToast={handleShowToast}
+                  theme={theme}
+                  onChangeTheme={setTheme}
                 />
               )}
             </Suspense>

@@ -159,14 +159,14 @@ export default function Auth({ onShowToast }: AuthProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
         <img
           src="/logo.png"
           alt="SmartWallet"
           className="h-16 w-16 object-contain mb-4 drop-shadow-sm rounded-2xl"
         />
-        <h2 className="text-center text-2xl font-bold tracking-tight text-[#111827] font-sans">
+        <h2 className="text-center text-2xl font-bold tracking-tight text-[#111827] dark:text-slate-100 font-sans">
           {mode === 'signin' && 'အကောင့်ဝင်ရောက်ပါ'}
           {mode === 'signup' && 'အကောင့်အသစ်ဖွင့်ပါ'}
           {mode === 'forgot' && 'စကားဝှက် ပြန်ယူပါ'}
@@ -217,7 +217,7 @@ export default function Auth({ onShowToast }: AuthProps) {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <motion.div
           layout
-          className="bg-white py-8 px-6 border border-slate-200 rounded-xl sm:px-10 shadow-xs"
+          className="bg-white dark:bg-slate-900 py-8 px-6 border border-slate-200 dark:border-slate-800 rounded-xl sm:px-10 shadow-xs"
         >
           {operationNotAllowedError && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-6 text-xs text-amber-800 leading-relaxed space-y-2">
@@ -310,7 +310,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                       placeholder="ဦးမောင်မောင်"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
+                      className="block w-full pl-10 pr-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
                     />
                   </div>
                 </div>
@@ -356,7 +356,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
+                      className="block w-full pl-10 pr-10 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
                     />
                     <button
                       id="toggle-show-password"
@@ -411,10 +411,10 @@ export default function Auth({ onShowToast }: AuthProps) {
                 <>
                   <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                      <div className="w-full border-t border-slate-100"></div>
+                      <div className="w-full border-t border-slate-100 dark:border-slate-800"></div>
                     </div>
                     <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-                      <span className="bg-white px-2 text-slate-400 font-medium">အခြားနည်းလမ်းဖြင့် ဝင်မည်</span>
+                      <span className="bg-white dark:bg-slate-900 px-2 text-slate-400 font-medium">အခြားနည်းလမ်းဖြင့် ဝင်မည်</span>
                     </div>
                   </div>
 
@@ -423,7 +423,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                     type="button"
                     disabled={loading}
                     onClick={handleGoogleSignIn}
-                    className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none disabled:opacity-50 transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none disabled:opacity-50 transition-colors cursor-pointer"
                   >
                     <Chrome className="w-4 h-4 text-[#2563EB]" />
                     Google ဖြင့် ဝင်ရောက်မည်

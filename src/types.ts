@@ -5,6 +5,8 @@ export interface UserProfile {
   photoURL: string;
   currency: string;
   monthlyIncomeGoal: number | null;
+  telegramChatId?: string;
+  telegramUsername?: string | null;
 }
 
 export type CategoryType = 'income' | 'expense';
