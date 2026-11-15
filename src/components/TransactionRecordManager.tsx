@@ -17,6 +17,7 @@ import { Category, UserProfile, Wallet, getWalletLabel } from '../types';
 import { getLocalDateString, getCurrentMonthRange } from '../utils/finance';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import CustomSelect from './CustomSelect';
 import Pagination from './Pagination';
 
 export type TransactionRecordType = 'income' | 'expense';
@@ -336,45 +337,43 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   placeholder={t.common.search}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
+                  className="w-full h-9 pl-9 pr-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
                 />
               </div>
 
               {/* Category Select */}
-              <div className={`relative ${wallets.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
-                <select
+              <div className={wallets.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'}>
+                <CustomSelect
                   id={`${idPrefix}-filter-category`}
+                  size="sm"
                   value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
-                >
-                  <option value="all">{t.records.allCategories}</option>
-                  {relevantCategories.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                  onChange={setCategoryFilter}
+                  options={[
+                    { value: 'all', label: t.records.allCategories },
+                    ...relevantCategories.map((c) => ({
+                      value: c.name,
+                      label: c.name,
+                    })),
+                  ]}
+                />
               </div>
 
               {/* Wallet Select */}
               {wallets.length > 0 && (
-                <div className="relative lg:col-span-3">
-                  <select
+                <div className="lg:col-span-3">
+                  <CustomSelect
                     id={`${idPrefix}-filter-wallet`}
+                    size="sm"
                     value={walletFilter}
-                    onChange={(e) => setWalletFilter(e.target.value)}
-                    className="w-full appearance-none pl-3 pr-8 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
-                  >
-                    <option value="all">{t.records.allWallets}</option>
-                    {wallets.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {getWalletLabel(w.type, w.name)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    onChange={setWalletFilter}
+                    options={[
+                      { value: 'all', label: t.records.allWallets },
+                      ...wallets.map((w) => ({
+                        value: w.id,
+                        label: getWalletLabel(w.type, w.name),
+                      })),
+                    ]}
+                  />
                 </div>
               )}
 
@@ -387,7 +386,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     title="စတင်ရက်"
-                    className="w-full min-w-0 px-2.5 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
+                    className="w-full h-9 min-w-0 px-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
                   />
                 </div>
                 <span className="text-slate-300 dark:text-slate-600 text-xs font-semibold select-none flex-shrink-0">–</span>
@@ -398,7 +397,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     title="ပြီးဆုံးရက်"
-                    className="w-full min-w-0 px-2.5 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
+                    className="w-full h-9 min-w-0 px-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
                   />
                 </div>
               </div>
@@ -641,7 +640,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   placeholder={config.placeholderTitle}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
+                  className="block w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
                 />
               </div>
 
@@ -658,7 +657,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     placeholder="0.00"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
+                    className="block w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
                   />
                 </div>
 
@@ -666,20 +665,16 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
                     {t.common.category} *
                   </label>
-                  <select
+                  <CustomSelect
                     id={`${idPrefix}-input-category`}
-                    required
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
-                  >
-                    <option value="" disabled>{t.records.selectCategory}</option>
-                    {relevantCategories.map((cat) => (
-                      <option key={cat.id} value={cat.name}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setCategory}
+                    placeholder={t.records.selectCategory}
+                    options={relevantCategories.map((cat) => ({
+                      value: cat.name,
+                      label: cat.name,
+                    }))}
+                  />
                 </div>
               </div>
 
@@ -688,18 +683,15 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
                     {t.common.wallet} *
                   </label>
-                  <select
+                  <CustomSelect
                     id={`${idPrefix}-input-wallet`}
                     value={walletId}
-                    onChange={(e) => setWalletId(e.target.value)}
-                    className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
-                  >
-                    {wallets.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {getWalletLabel(w.type, w.name)}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setWalletId}
+                    options={wallets.map((w) => ({
+                      value: w.id,
+                      label: getWalletLabel(w.type, w.name),
+                    }))}
+                  />
                 </div>
               )}
 
@@ -713,7 +705,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors cursor-pointer"
+                  className="block w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors cursor-pointer"
                 />
               </div>
 

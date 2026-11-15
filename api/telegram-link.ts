@@ -3,6 +3,18 @@ import { randomBytes } from 'crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminAuth, getAdminDb } from './_lib/firebaseAdmin.js';
 
+function normalizeBotUsername(raw?: string): string | null {
+  if (!raw) return null;
+  const cleaned = raw
+    .trim()
+    .replace(/^https?:\/\/t\.me\//i, '')
+    .replace(/^@+/, '')
+    .split('?')[0]
+    .replace(/\/+$/, '')
+    .trim();
+  return cleaned || null;
+}
+
 function extractBearerToken(req: VercelRequest): string | null {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
@@ -31,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({
         linked: Boolean(data?.telegramChatId),
         telegramUsername: data?.telegramUsername || null,
-        botUsername: process.env.TELEGRAM_BOT_USERNAME || null,
+        botUsername: normalizeBotUsername(process.env.TELEGRAM_BOT_USERNAME),
       });
     }
 
@@ -61,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       createdAt: new Date().toISOString(),
     });
 
-    const botUsername = process.env.TELEGRAM_BOT_USERNAME || null;
+    const botUsername = normalizeBotUsername(process.env.TELEGRAM_BOT_USERNAME);
     const deepLink = botUsername ? `https://t.me/${botUsername}?start=${code}` : null;
 
     return res.status(200).json({

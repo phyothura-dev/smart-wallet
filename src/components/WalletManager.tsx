@@ -21,6 +21,7 @@ import { calculateWalletBalances } from '../utils/finance';
 import TransferModal from './TransferModal';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import CustomSelect from './CustomSelect';
 
 interface WalletManagerProps {
   wallets: Wallet[];
@@ -465,18 +466,15 @@ export default function WalletManager({
                     </span>
                   </div>
                 ) : (
-                  <select
+                  <CustomSelect
                     id="select-wallet-type"
                     value={type}
-                    onChange={(e) => setType(e.target.value as WalletType)}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 cursor-pointer"
-                  >
-                    {unusedTypes.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setType(val as WalletType)}
+                    options={unusedTypes.map((t) => ({
+                      value: t.id,
+                      label: t.label,
+                    }))}
+                  />
                 )}
               </div>
 
@@ -494,7 +492,7 @@ export default function WalletManager({
                     onChange={(e) => setWalletName(e.target.value)}
                     placeholder="အမည်..."
                     maxLength={50}
-                    className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800"
+                    className="w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800"
                   />
                 </div>
               )}
@@ -513,7 +511,7 @@ export default function WalletManager({
                   value={initialBalance}
                   onChange={(e) => setInitialBalance(e.target.value)}
                   placeholder="0"
-                  className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800"
+                  className="w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800"
                 />
               </div>
 

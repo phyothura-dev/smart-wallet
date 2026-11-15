@@ -3,6 +3,7 @@ import { ArrowRightLeft, X } from "lucide-react";
 import { Wallet, Transfer, getWalletLabel } from "../types";
 import { getLocalDateString } from "../utils/finance";
 import { useLanguage } from "../contexts/LanguageContext";
+import CustomSelect from "./CustomSelect";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -120,25 +121,21 @@ export default function TransferModal({
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
               {t.wallets.fromWallet} *
             </label>
-            <select
+            <CustomSelect
               id="select-transfer-from"
               value={transferFrom}
-              onChange={(e) => {
-                const newFrom = e.target.value;
+              onChange={(newFrom) => {
                 setTransferFrom(newFrom);
                 if (newFrom === transferTo) {
                   const other = wallets.find((w) => w.id !== newFrom);
                   if (other) setTransferTo(other.id);
                 }
               }}
-              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 cursor-pointer"
-            >
-              {wallets.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {getWalletNameById(w.id)}
-                </option>
-              ))}
-            </select>
+              options={wallets.map((w) => ({
+                value: w.id,
+                label: getWalletNameById(w.id),
+              }))}
+            />
           </div>
 
           {/* to wallet */}
@@ -146,20 +143,17 @@ export default function TransferModal({
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
               {t.wallets.toWallet} *
             </label>
-            <select
+            <CustomSelect
               id="select-transfer-to"
               value={transferTo}
-              onChange={(e) => setTransferTo(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 cursor-pointer"
-            >
-              {wallets
+              onChange={setTransferTo}
+              options={wallets
                 .filter((w) => w.id !== transferFrom)
-                .map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {getWalletNameById(w.id)}
-                  </option>
-                ))}
-            </select>
+                .map((w) => ({
+                  value: w.id,
+                  label: getWalletNameById(w.id),
+                }))}
+            />
           </div>
 
           {/* amount */}
@@ -176,7 +170,7 @@ export default function TransferModal({
               placeholder="0.00"
               value={transferAmount}
               onChange={(e) => setTransferAmount(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800"
+              className="w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800"
             />
           </div>
 
@@ -191,7 +185,7 @@ export default function TransferModal({
               required
               value={transferDate}
               onChange={(e) => setTransferDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 cursor-pointer"
+              className="w-full h-10 px-3 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 cursor-pointer"
             />
           </div>
 

@@ -16,6 +16,7 @@ import { exportTransactionsToCSV } from '../utils/export';
 import { getCurrentMonthRange } from '../utils/finance';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import CustomSelect from './CustomSelect';
 
 type TxSortField = 'type' | 'title' | 'category' | 'wallet' | 'date' | 'amount';
 type SortOrder = 'asc' | 'desc';
@@ -256,42 +257,41 @@ export default function TransactionHistory({
               placeholder={t.common.search}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
+              className="w-full h-9 pl-9 pr-3 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
             />
           </div>
 
           {/* Type Filter Select */}
-          <div className={`relative ${wallets.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
-            <select
+          <div className={wallets.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'}>
+            <CustomSelect
               id="tx-filter-type"
+              size="sm"
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as 'all' | 'income' | 'expense')}
-              className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
-            >
-              <option value="all">{t.transactions.typeLabel}: {t.common.all}</option>
-              <option value="income">{t.transactions.incomeBadge}</option>
-              <option value="expense">{t.transactions.expenseBadge}</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              onChange={(val) => setTypeFilter(val as 'all' | 'income' | 'expense')}
+              options={[
+                { value: 'all', label: `${t.transactions.typeLabel}: ${t.common.all}` },
+                { value: 'income', label: t.transactions.incomeBadge },
+                { value: 'expense', label: t.transactions.expenseBadge },
+              ]}
+            />
           </div>
 
           {/* Wallet Filter Select */}
           {wallets.length > 0 && (
-            <div className="relative lg:col-span-3">
-              <select
+            <div className="lg:col-span-3">
+              <CustomSelect
                 id="tx-filter-wallet"
+                size="sm"
                 value={walletFilter}
-                onChange={(e) => setWalletFilter(e.target.value)}
-                className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
-              >
-                <option value="all">{t.records.allWallets}</option>
-                {wallets.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {getWalletLabel(w.type, w.name)}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                onChange={setWalletFilter}
+                options={[
+                  { value: 'all', label: t.records.allWallets },
+                  ...wallets.map((w) => ({
+                    value: w.id,
+                    label: getWalletLabel(w.type, w.name),
+                  })),
+                ]}
+              />
             </div>
           )}
 
@@ -304,7 +304,7 @@ export default function TransactionHistory({
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 title="စတင်ရက်"
-                className="w-full min-w-0 px-2.5 py-2 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
+                className="w-full h-9 min-w-0 px-2.5 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
               />
             </div>
             <span className="text-slate-300 dark:text-slate-600 text-xs font-semibold select-none flex-shrink-0">–</span>
@@ -315,7 +315,7 @@ export default function TransactionHistory({
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 title="ပြီးဆုံးရက်"
-                className="w-full min-w-0 px-2.5 py-2 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
+                className="w-full h-9 min-w-0 px-2.5 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all cursor-pointer"
               />
             </div>
           </div>

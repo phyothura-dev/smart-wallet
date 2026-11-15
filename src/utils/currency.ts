@@ -116,3 +116,30 @@ export function convertCurrencyAmount(
   const amountInMmk = amount * rates[from];
   return amountInMmk / rates[to];
 }
+
+export async function fetchLiveExchangeRates(): Promise<Record<CurrencyCode, number>> {
+  const response = await fetch('https://open.er-api.com/v6/latest/MMK');
+  if (!response.ok) {
+    throw new Error('Failed to fetch live exchange rates');
+  }
+  const data = (await response.json()) as {
+    result?: string;
+    rates?: Record<string, number>;
+  };
+  if (data.result !== 'success' || !data.rates) {
+    throw new Error('Invalid exchange rate response');
+  }
+
+  const next: Record<CurrencyCode, number> = { ...DEFAULT_EXCHANGE_RATES };
+  for (const code of Object.keys(CURRENCY_CONFIGS) as CurrencyCode[]) {
+    if (code === 'MMK') {
+      next.MMK = 1;
+      continue;
+    }
+    const ratePerMmk = data.rates[code];
+    if (typeof ratePerMmk === 'number' && ratePerMmk > 0) {
+      next[code] = Math.round((1 / ratePerMmk) * 100) / 100;
+    }
+  }
+  return next;
+}

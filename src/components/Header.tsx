@@ -4,6 +4,7 @@ import type { ResolvedTheme } from '../hooks/useTheme';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { CURRENCY_LIST, type CurrencyCode } from '../utils/currency';
+import CustomSelect from './CustomSelect';
 
 interface HeaderProps {
   currentTab: string;
@@ -100,20 +101,19 @@ export default function Header({
           </button>
         )}
 
-        <select
+        <CustomSelect
           id="select-header-currency"
           value={displayCurrency}
-          onChange={(e) => setDisplayCurrency(e.target.value as CurrencyCode)}
-          title={t.profile.displayCurrency}
-          aria-label={t.profile.displayCurrency}
-          className="h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer focus:outline-none focus:border-blue-500"
-        >
-          {CURRENCY_LIST.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.code} ({c.shortLabel})
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setDisplayCurrency(val as CurrencyCode)}
+          options={CURRENCY_LIST.map((c) => ({
+            value: c.code,
+            label: `${c.code} (${c.shortLabel})`,
+          }))}
+          size="sm"
+          menuAlign="right"
+          ariaLabel={t.profile.displayCurrency}
+          buttonClassName="bg-slate-50 dark:bg-slate-800 font-bold text-xs min-w-[92px]"
+        />
 
         <button
           id="btn-header-lang-toggle"

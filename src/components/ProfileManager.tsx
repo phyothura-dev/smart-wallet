@@ -7,12 +7,14 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import {
   CURRENCY_LIST,
   DEFAULT_EXCHANGE_RATES,
+  fetchLiveExchangeRates,
   mergeExchangeRates,
   normalizeCurrencyCode,
   type CurrencyCode,
 } from '../utils/currency';
 import type { Language } from '../i18n/translations';
 import TelegramConnectCard from './TelegramConnectCard';
+import CustomSelect from './CustomSelect';
 
 interface ProfileManagerProps {
   profile: UserProfile | null;
@@ -73,6 +75,7 @@ export default function ProfileManager({
   
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingCurrency, setIsSavingCurrency] = useState(false);
+  const [isSyncingRates, setIsSyncingRates] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -183,6 +186,40 @@ export default function ProfileManager({
       EUR: String(DEFAULT_EXCHANGE_RATES.EUR),
       JPY: String(DEFAULT_EXCHANGE_RATES.JPY),
     });
+  };
+
+  const handleSyncLiveRates = async () => {
+    setIsSyncingRates(true);
+    try {
+      const liveRates = await fetchLiveExchangeRates();
+      setRatesForm({
+        MMK: String(liveRates.MMK),
+        USD: String(liveRates.USD),
+        THB: String(liveRates.THB),
+        SGD: String(liveRates.SGD),
+        EUR: String(liveRates.EUR),
+        JPY: String(liveRates.JPY),
+      });
+      await onUpdateProfile({
+        currency,
+        exchangeRates: liveRates,
+      });
+      onShowToast(
+        language === 'mm'
+          ? 'နောက်ဆုံးရ ငွေလဲနှုန်းများကို API မှ ရယူသိမ်းဆည်းပြီးပါပြီ။'
+          : 'Live exchange rates synced and saved.',
+        'success'
+      );
+    } catch {
+      onShowToast(
+        language === 'mm'
+          ? 'ငွေလဲနှုန်း API ချိတ်ဆက်မှု မအောင်မြင်ပါ။'
+          : 'Failed to sync live exchange rates.',
+        'error'
+      );
+    } finally {
+      setIsSyncingRates(false);
+    }
   };
 
   return (
@@ -299,14 +336,26 @@ export default function ProfileManager({
                 <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t.profile.currencyTitle}</h3>
               </div>
 
-              <button
-                type="button"
-                onClick={handleResetRates}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
-              >
-                <RotateCcw className="w-3 h-3" />
-                {t.profile.resetRates}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  id="btn-sync-live-rates"
+                  type="button"
+                  onClick={handleSyncLiveRates}
+                  disabled={isSyncingRates}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isSyncingRates ? 'animate-spin' : ''}`} />
+                  {language === 'mm' ? 'Live နှုန်းထားရယူမည်' : 'Sync Live'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetRates}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  {t.profile.resetRates}
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -314,36 +363,30 @@ export default function ProfileManager({
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
                   {t.profile.baseCurrency}
                 </label>
-                <select
+                <CustomSelect
                   id="select-base-currency"
                   value={currency}
-                  onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:border-blue-500 cursor-pointer"
-                >
-                  {CURRENCY_LIST.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {language === 'mm' ? c.nameMm : c.nameEn}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setCurrency(val as CurrencyCode)}
+                  options={CURRENCY_LIST.map((c) => ({
+                    value: c.code,
+                    label: language === 'mm' ? c.nameMm : c.nameEn,
+                  }))}
+                />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
                   {t.profile.displayCurrency}
                 </label>
-                <select
+                <CustomSelect
                   id="select-display-currency"
                   value={displayCurrency}
-                  onChange={(e) => setDisplayCurrency(e.target.value as CurrencyCode)}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:border-blue-500 cursor-pointer"
-                >
-                  {CURRENCY_LIST.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {language === 'mm' ? c.nameMm : c.nameEn}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setDisplayCurrency(val as CurrencyCode)}
+                  options={CURRENCY_LIST.map((c) => ({
+                    value: c.code,
+                    label: language === 'mm' ? c.nameMm : c.nameEn,
+                  }))}
+                />
               </div>
             </div>
 
