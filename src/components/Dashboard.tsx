@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useCurrency } from '../contexts/CurrencyContext';
 import {
   TrendingUp,
   TrendingDown,
@@ -31,6 +32,7 @@ import { getWalletIcon } from './WalletManager';
 import { calculateWalletBalances } from '../utils/finance';
 import TransferModal from './TransferModal';
 import type { ResolvedTheme } from '../hooks/useTheme';
+import { useLanguage } from '../contexts/LanguageContext';
 
 type TimeFrame = 'this_month' | 'last_month' | 'this_year' | 'all' | 'custom';
 
@@ -59,8 +61,9 @@ export default function Dashboard({
   onAddTransfer,
   onShowToast
 }: DashboardProps) {
+  const { language, t } = useLanguage();
+  const { currencySymbol, baseCurrencySymbol, convertFromBase } = useCurrency();
   const isDark = resolvedTheme === 'dark';
-  const currencySymbol = 'Ks ';
 
   // time frame filter state
   const [timeFrame, setTimeFrame] = useState<TimeFrame>('this_month');
@@ -81,7 +84,7 @@ export default function Dashboard({
       const start = `${year}-${String(month + 1).padStart(2, '0')}-01`;
       const lastDay = new Date(year, month + 1, 0).getDate();
       const end = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-      return { start, end, label: 'ဒီလ' };
+      return { start, end, label: t.records.thisMonth };
     }
     if (timeFrame === 'last_month') {
       const prevDate = new Date(year, month - 1, 1);
@@ -90,16 +93,16 @@ export default function Dashboard({
       const start = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-01`;
       const lastDay = new Date(prevYear, prevMonth + 1, 0).getDate();
       const end = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-      return { start, end, label: 'ပြီးခဲ့သည့်လ' };
+      return { start, end, label: t.records.lastMonth };
     }
     if (timeFrame === 'this_year') {
-      return { start: `${year}-01-01`, end: `${year}-12-31`, label: 'ဒီနှစ်' };
+      return { start: `${year}-01-01`, end: `${year}-12-31`, label: language === 'mm' ? 'ဒီနှစ်' : 'This Year' };
     }
     if (timeFrame === 'custom') {
-      return { start: customStart, end: customEnd, label: 'ရက်စွဲရွေးချယ်မှု' };
+      return { start: customStart, end: customEnd, label: t.records.customRange };
     }
-    return { start: '', end: '', label: 'ကာလအားလုံး' };
-  }, [timeFrame, customStart, customEnd]);
+    return { start: '', end: '', label: t.records.allDates };
+  }, [timeFrame, customStart, customEnd, language, t]);
 
   // filtered incomes and expenses
   const periodData = useMemo(() => {
@@ -178,12 +181,10 @@ export default function Dashboard({
 
   // monthly bar chart data
   const monthlyChartData = useMemo(() => {
-    const months = [
-      'ဇန်နဝါရီ', 'ဖေဖော်ဝါရီ', 'မတ်',
-      'ဧပြီ', 'မေ', 'ဇွန်',
-      'ဇူလိုင်', 'ဩဂုတ်', 'စက်တင်ဘာ',
-      'အောက်တိုဘာ', 'နိုဝင်ဘာ', 'ဒီဇင်ဘာ'
-    ];
+    const months =
+      language === 'mm'
+        ? ['ဇန်နဝါရီ', 'ဖေဖော်ဝါရီ', 'မတ်', 'ဧပြီ', 'မေ', 'ဇွန်', 'ဇူလိုင်', 'ဩဂုတ်', 'စက်တင်ဘာ', 'အောက်တိုဘာ', 'နိုဝင်ဘာ', 'ဒီဇင်ဘာ']
+        : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     const chartDataMap: { [key: string]: { monthName: string; income: number; expense: number; sortKey: string } } = {};
     const now = new Date();
@@ -216,7 +217,7 @@ export default function Dashboard({
     });
 
     return Object.values(chartDataMap).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
-  }, [incomes, expenses]);
+  }, [incomes, expenses, language]);
 
   // expense category pie chart data
   const categoryChartData = useMemo(() => {
@@ -245,11 +246,11 @@ export default function Dashboard({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
           {[
-            { id: 'this_month', label: 'ဒီလ' },
-            { id: 'last_month', label: 'ပြီးခဲ့သည့်လ' },
-            { id: 'this_year', label: 'ဒီနှစ်' },
-            { id: 'all', label: 'အားလုံး' },
-            { id: 'custom', label: 'ရက်စွဲရွေးမည်' },
+            { id: 'this_month', label: t.records.thisMonth },
+            { id: 'last_month', label: t.records.lastMonth },
+            { id: 'this_year', label: language === 'mm' ? 'ဒီနှစ်' : 'This Year' },
+            { id: 'all', label: t.common.all },
+            { id: 'custom', label: t.records.customRange },
           ].map((tf) => {
             const isActive = timeFrame === tf.id;
             return (
@@ -272,14 +273,14 @@ export default function Dashboard({
         {/* Custom date range picker if custom selected */}
         {timeFrame === 'custom' && (
           <div className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs text-xs animate-in fade-in duration-150">
-            <span className="text-slate-400">မှ</span>
+            <span className="text-slate-400">{t.records.dateFrom}</span>
             <input
               type="date"
               value={customStart}
               onChange={(e) => setCustomStart(e.target.value)}
               className="border-0 text-slate-800 dark:text-slate-100 bg-transparent focus:outline-none cursor-pointer"
             />
-            <span className="text-slate-400">ထိ</span>
+            <span className="text-slate-400">{t.records.dateTo}</span>
             <input
               type="date"
               value={customEnd}
@@ -296,7 +297,7 @@ export default function Dashboard({
         <div id="card-total-balance" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              လက်ကျန်ငွေ
+              {t.dashboard.totalBalance}
             </span>
             <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
               totalAssets >= 0 ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400' : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400'
@@ -308,7 +309,7 @@ export default function Dashboard({
             <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 break-words">
               {totalAssets < 0 ? '-' : ''}
               {currencySymbol}
-              {Math.abs(totalAssets).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {Math.abs(convertFromBase(totalAssets)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
           </div>
         </div>
@@ -317,7 +318,7 @@ export default function Dashboard({
         <div id="card-total-income" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              ဝင်ငွေ
+              {t.dashboard.incomeLabel}
             </span>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
               <TrendingUp className="h-4.5 w-4.5" />
@@ -326,7 +327,7 @@ export default function Dashboard({
           <div className="mt-2.5 sm:mt-3">
             <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 break-words">
               +{currencySymbol}
-              {periodData.totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {convertFromBase(periodData.totalIncome).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
           </div>
         </div>
@@ -335,7 +336,7 @@ export default function Dashboard({
         <div id="card-total-expenses" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-2xs transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              ထွက်ငွေ
+              {t.dashboard.expenseLabel}
             </span>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
               <TrendingDown className="h-4.5 w-4.5" />
@@ -344,10 +345,10 @@ export default function Dashboard({
           <div className="mt-2.5 sm:mt-3 flex items-baseline justify-between gap-2">
             <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 break-words">
               -{currencySymbol}
-              {periodData.totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {convertFromBase(periodData.totalExpense).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
             <span className={`text-xs font-semibold ${periodData.netFlow >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-              အသားတင်: {periodData.netFlow >= 0 ? '+' : ''}{currencySymbol}{periodData.netFlow.toLocaleString()}
+              {language === 'mm' ? 'အသားတင်:' : 'Net:'} {periodData.netFlow >= 0 ? '+' : ''}{currencySymbol}{convertFromBase(periodData.netFlow).toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>
@@ -358,7 +359,7 @@ export default function Dashboard({
         <div
           id="dash-loan-overview-strip"
           onClick={() => onChangeTab('loans')}
-          className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 px-4 py-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer group"
+          className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer group"
         >
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
@@ -366,26 +367,26 @@ export default function Dashboard({
             </div>
             <div>
               <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">
-                ချေးငွေနှင့် အကြွေးများ
+                {t.nav.loans}
               </span>
               <span className="text-[11px] font-medium text-slate-400 ml-1.5">
-                ({loanStats.active} ခု ဆပ်ရန်ကျန်)
+                ({loanStats.active} {language === 'mm' ? 'ခု ဆပ်ရန်ကျန်' : 'active'})
               </span>
             </div>
           </div>
 
           <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 text-xs pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400 font-medium">ရရန်ရှိ:</span>
+              <span className="text-slate-400 font-medium">{t.dashboard.toReceive}:</span>
               <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                {currencySymbol}{loanStats.lent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {currencySymbol}{convertFromBase(loanStats.lent).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <div className="h-3 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400 font-medium">ပေးရန်ရှိ:</span>
+              <span className="text-slate-400 font-medium">{t.dashboard.toPay}:</span>
               <span className="font-bold text-amber-600 dark:text-amber-400">
-                {currencySymbol}{loanStats.borrowed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {currencySymbol}{convertFromBase(loanStats.borrowed).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all hidden sm:block" />
@@ -398,15 +399,15 @@ export default function Dashboard({
         {/* Monthly Income vs Expense Chart */}
         <div id="card-monthly-chart" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 lg:col-span-2 flex flex-col min-h-[300px] sm:h-[360px]">
           <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">လစဉ် နှိုင်းယှဉ်ချက်</h4>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{t.dashboard.incomeVsExpense}</h4>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 bg-[#2563EB] rounded-sm" />
-                <span className="text-slate-600 dark:text-slate-300 font-medium">ဝင်ငွေ</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium">{t.dashboard.incomeLabel}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 bg-rose-500 rounded-sm" />
-                <span className="text-slate-600 dark:text-slate-300 font-medium">ထွက်ငွေ</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium">{t.dashboard.expenseLabel}</span>
               </div>
             </div>
           </div>
@@ -414,7 +415,7 @@ export default function Dashboard({
             {incomes.length === 0 && expenses.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center p-4">
                 <Activity className="h-10 w-10 text-slate-300 dark:text-slate-600 mb-2" />
-                <p className="text-sm text-slate-500 dark:text-slate-400">ဇယားတွင် ဖော်ပြရန် မှတ်တမ်းမရှိသေးပါ</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t.dashboard.noTransactions}</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -432,7 +433,7 @@ export default function Dashboard({
                       boxShadow: 'none',
                       fontSize: '12px',
                     }}
-                    formatter={(value: number) => [`${currencySymbol}${value.toLocaleString()}`, '']}
+                    formatter={(value: number) => [`${currencySymbol}${convertFromBase(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, '']}
                   />
                   <Bar dataKey="income" fill="#2563EB" radius={[3, 3, 0, 0]} barSize={12} />
                   <Bar dataKey="expense" fill="#DC2626" radius={[3, 3, 0, 0]} barSize={12} />
@@ -445,7 +446,7 @@ export default function Dashboard({
         {/* Expenses by Category Pie Chart (Reflecting Period) */}
         <div id="card-category-chart" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 flex flex-col min-h-[300px] sm:h-[360px]">
           <div className="mb-3 sm:mb-4 flex items-center justify-between">
-            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">အမျိုးအစားအလိုက် သုံးစွဲမှု</h4>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{t.dashboard.expenseByCategory}</h4>
             <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-medium">
               {dateRange.label}
             </span>
@@ -454,7 +455,7 @@ export default function Dashboard({
             {periodData.filteredExpenses.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center p-4">
                 <Folder className="h-10 w-10 text-slate-300 dark:text-slate-600 mb-2" />
-                <p className="text-sm text-slate-500 dark:text-slate-400">ဤကာလတွင် သုံးစွဲမှု မှတ်တမ်း မရှိသေးပါ</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t.dashboard.noExpenseThisMonth}</p>
               </div>
             ) : (
               <>
@@ -483,16 +484,16 @@ export default function Dashboard({
                           fontSize: '12px',
                         }}
                         itemStyle={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
-                        formatter={(value: number) => [`${currencySymbol}${value.toLocaleString()}`, 'ပမာဏ']}
+                        formatter={(value: number) => [`${currencySymbol}${convertFromBase(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`, t.common.amount]}
                       />
                     </PieChart>
                   </ResponsiveContainer>
                   {/* Center Text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-0.5">
-                    <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">စုစုပေါင်း</span>
+                    <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">{t.common.total}</span>
                     <span className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100">
                       {currencySymbol}
-                      {periodData.totalExpense.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      {convertFromBase(periodData.totalExpense).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
@@ -506,7 +507,7 @@ export default function Dashboard({
                         <span className="truncate text-slate-700 dark:text-slate-200">{entry.name}</span>
                       </div>
                       <div className="text-slate-500 dark:text-slate-400 flex-shrink-0 ml-2">
-                        {currencySymbol}{entry.value.toLocaleString()} <span className="text-slate-400 text-[10px]">({entry.percentage}%)</span>
+                        {currencySymbol}{convertFromBase(entry.value).toLocaleString(undefined, { maximumFractionDigits: 2 })} <span className="text-slate-400 text-[10px]">({entry.percentage}%)</span>
                       </div>
                     </div>
                   ))}
@@ -520,13 +521,13 @@ export default function Dashboard({
       {/* Recent Transactions */}
       <div id="card-recent-transactions" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xs">
         <div className="mb-4 flex items-center justify-between">
-          <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">လတ်တလော မှတ်တမ်း</h4>
+          <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{t.dashboard.recentTransactions}</h4>
           <button
             id="dash-btn-view-all-tx"
             onClick={() => onChangeTab('transactions')}
             className="flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer min-h-[36px]"
           >
-            အားလုံးကြည့်မည် <ArrowRight className="h-3.5 w-3.5" />
+            {t.common.viewAll} <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
 
@@ -534,7 +535,7 @@ export default function Dashboard({
           {recentTransactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-8">
               <Calendar className="h-9 w-9 text-slate-300 dark:text-slate-600 mb-2" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">မှတ်တမ်းများ မရှိသေးပါ</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{t.dashboard.noTransactions}</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -563,7 +564,7 @@ export default function Dashboard({
                     <p className={`text-sm sm:text-base font-bold ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-100'}`}>
                       {tx.type === 'income' ? '+' : '-'}
                       {currencySymbol}
-                      {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {convertFromBase(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>
@@ -579,7 +580,7 @@ export default function Dashboard({
         onClose={() => setIsOpenTransferModal(false)}
         wallets={wallets}
         defaultFromWalletId={selectedFromWalletId}
-        currencySymbol={currencySymbol}
+        currencySymbol={baseCurrencySymbol}
         onAddTransfer={onAddTransfer}
         onShowToast={onShowToast || (() => {})}
       />

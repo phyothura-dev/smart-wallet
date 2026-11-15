@@ -8,14 +8,16 @@ import {
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { seedNewUserData } from '../lib/seedData';
-import { Mail, Lock, User, RefreshCw, Eye, EyeOff, CheckCircle, Chrome } from 'lucide-react';
+import { Mail, Lock, User, RefreshCw, Eye, EyeOff, CheckCircle, Chrome, Languages } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AuthProps {
   onShowToast: (message: string, type: 'success' | 'error') => void;
 }
 
 export default function Auth({ onShowToast }: AuthProps) {
+  const { language, toggleLanguage, t } = useLanguage();
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,28 +36,28 @@ export default function Auth({ onShowToast }: AuthProps) {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      onShowToast('ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ပြည့်စုံစွာ ဖြည့်သွင်းပေးပါ။', 'error');
+      onShowToast(t.auth.fillAllFields, 'error');
       return;
     }
     if (!validateEmail(email)) {
-      onShowToast('မှန်ကန်သော အီးမေးလ်လိပ်စာ ရိုက်ထည့်ပေးပါ။', 'error');
+      onShowToast(t.auth.invalidEmail, 'error');
       return;
     }
 
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      onShowToast('ပြန်လည်ကြိုဆိုပါသည်!', 'success');
+      onShowToast(t.auth.welcomeBack, 'success');
     } catch (err: any) {
-      let errMsg = 'အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။';
+      let errMsg = t.auth.invalidCredential;
       if (err.code === 'auth/invalid-credential') {
-        errMsg = 'အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။';
+        errMsg = t.auth.invalidCredential;
       } else if (err.code === 'auth/user-not-found') {
-        errMsg = 'ဤအီးမေးလ်ဖြင့် အကောင့်ဖွင့်ထားခြင်း မရှိပါ။';
+        errMsg = t.auth.userNotFound;
       } else if (err.code === 'auth/wrong-password') {
-        errMsg = 'စကားဝှက် မှားယွင်းနေပါသည်။';
+        errMsg = t.auth.wrongPassword;
       } else if (err.code === 'auth/operation-not-allowed') {
-        errMsg = 'အကောင့်ဝင်ရောက်ခွင့် ပိတ်ထားပါသည်။';
+        errMsg = t.auth.operationNotAllowed;
         setOperationNotAllowedError(true);
       } else if (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain'))) {
         errMsg = "Unauthorized Domain: This hosting domain is not authorized in your Firebase Console.";
@@ -70,15 +72,15 @@ export default function Auth({ onShowToast }: AuthProps) {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !fullName) {
-      onShowToast('ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ပြည့်စုံစွာ ဖြည့်သွင်းပေးပါ။', 'error');
+      onShowToast(t.auth.fillAllFields, 'error');
       return;
     }
     if (!validateEmail(email)) {
-      onShowToast('မှန်ကန်သော အီးမေးလ်လိပ်စာ ရိုက်ထည့်ပေးပါ။', 'error');
+      onShowToast(t.auth.invalidEmail, 'error');
       return;
     }
     if (password.length < 6) {
-      onShowToast('စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။', 'error');
+      onShowToast(t.auth.passwordMinLength, 'error');
       return;
     }
 
@@ -97,15 +99,15 @@ export default function Auth({ onShowToast }: AuthProps) {
         currency,
       });
 
-      onShowToast('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ ကြိုဆိုပါသည်!', 'success');
+      onShowToast(t.auth.signUpSuccess, 'success');
     } catch (err: any) {
-      let errMsg = 'အကောင့်ဖွင့်ရာတွင် အမှားဖြစ်ပေါ်ခဲ့ပါသည်။';
+      let errMsg = t.auth.signUpError;
       if (err.code === 'auth/email-already-in-use') {
-        errMsg = 'ဤအီးမေးလ်ဖြင့် အကောင့်ဖွင့်ပြီးသားဖြစ်ပါသည်။';
+        errMsg = t.auth.emailInUse;
       } else if (err.code === 'auth/weak-password') {
-        errMsg = 'စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။';
+        errMsg = t.auth.passwordMinLength;
       } else if (err.code === 'auth/operation-not-allowed') {
-        errMsg = 'အကောင့်ဖွင့်ခြင်း ပိတ်ထားပါသည်။';
+        errMsg = t.auth.operationNotAllowed;
         setOperationNotAllowedError(true);
       } else if (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain'))) {
         errMsg = "Unauthorized Domain: This hosting domain is not authorized in your Firebase Console.";
@@ -122,9 +124,9 @@ export default function Auth({ onShowToast }: AuthProps) {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      onShowToast('ပြန်လည်ကြိုဆိုပါသည်!', 'success');
+      onShowToast(t.auth.welcomeBack, 'success');
     } catch (err: any) {
-      let errMsg = `Google အကောင့်ဖြင့် ဝင်ရောက်ခြင်း မအောင်မြင်ပါ (${err.message || 'အမှားဖြစ်ပေါ်ခဲ့ပါသည်'})`;
+      let errMsg = `${t.auth.googleError} (${err.message || ''})`;
       if (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain'))) {
         errMsg = "Unauthorized Domain: This hosting domain is not authorized in your Firebase Console.";
         setUnauthorizedDomainError(true);
@@ -138,11 +140,11 @@ export default function Auth({ onShowToast }: AuthProps) {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      onShowToast('ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ပြည့်စုံစွာ ဖြည့်သွင်းပေးပါ။', 'error');
+      onShowToast(t.auth.fillAllFields, 'error');
       return;
     }
     if (!validateEmail(email)) {
-      onShowToast('မှန်ကန်သော အီးမေးလ်လိပ်စာ ရိုက်ထည့်ပေးပါ။', 'error');
+      onShowToast(t.auth.invalidEmail, 'error');
       return;
     }
 
@@ -150,16 +152,28 @@ export default function Auth({ onShowToast }: AuthProps) {
     try {
       await sendPasswordResetEmail(auth, email);
       setForgotSent(true);
-      onShowToast('စကားဝှက်ပြန်လည်သတ်မှတ်ရန် လင့်ခ်ကို အီးမေးလ်သို့ ပေးပို့ပြီးပါပြီ။', 'success');
+      onShowToast(t.auth.resetSentSuccess, 'success');
     } catch {
-      onShowToast('စကားဝှက်ပြန်လည်သတ်မှတ်ခြင်း မအောင်မြင်ပါ။', 'error');
+      onShowToast(t.auth.resetFailed, 'error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
+    <div className="relative min-h-screen bg-[#F8FAFC] dark:bg-slate-950 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+        <button
+          id="btn-auth-lang-toggle"
+          type="button"
+          onClick={toggleLanguage}
+          className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs transition-colors cursor-pointer"
+        >
+          <Languages className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+          <span>{language === 'mm' ? 'MM' : 'EN'}</span>
+        </button>
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
         <img
           src="/logo.png"
@@ -167,14 +181,14 @@ export default function Auth({ onShowToast }: AuthProps) {
           className="h-16 w-16 object-contain mb-4 drop-shadow-sm rounded-2xl"
         />
         <h2 className="text-center text-2xl font-bold tracking-tight text-[#111827] dark:text-slate-100 font-sans">
-          {mode === 'signin' && 'အကောင့်ဝင်ရောက်ပါ'}
-          {mode === 'signup' && 'အကောင့်အသစ်ဖွင့်ပါ'}
-          {mode === 'forgot' && 'စကားဝှက် ပြန်ယူပါ'}
+          {mode === 'signin' && t.auth.signInTitle}
+          {mode === 'signup' && t.auth.signUpTitle}
+          {mode === 'forgot' && t.auth.forgotTitle}
         </h2>
         <p className="mt-2 text-center text-sm text-slate-500">
           {mode === 'signin' && (
             <>
-              သို့မဟုတ်{' '}
+              {t.auth.orText}{' '}
               <button
                 id="link-to-signup"
                 onClick={() => {
@@ -183,19 +197,19 @@ export default function Auth({ onShowToast }: AuthProps) {
                 }}
                 className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors cursor-pointer"
               >
-                အကောင့်အသစ်ဖွင့်မည်
+                {t.auth.createAccountLink}
               </button>
             </>
           )}
           {mode === 'signup' && (
             <>
-              အကောင့်ရှိပြီးသားဖြစ်ပါက{' '}
+              {t.auth.alreadyHaveAccount}{' '}
               <button
                 id="link-to-signin"
                 onClick={() => setMode('signin')}
                 className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors cursor-pointer"
               >
-                အကောင့်ဝင်ပါ
+                {t.auth.signInLink}
               </button>
             </>
           )}
@@ -208,7 +222,7 @@ export default function Auth({ onShowToast }: AuthProps) {
               }}
               className="font-semibold text-[#2563EB] hover:text-[#1D4ED8] transition-colors cursor-pointer"
             >
-              အကောင့်ဝင်ရန် ပြန်သွားမည်
+              {t.auth.backToSignIn}
             </button>
           )}
         </p>
@@ -266,9 +280,9 @@ export default function Auth({ onShowToast }: AuthProps) {
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-emerald-50 text-[#059669] mb-4">
                 <CheckCircle className="h-6 w-6" />
               </div>
-              <h3 className="text-base font-semibold text-[#111827]">အီးမေးလ်ကို စစ်ဆေးပါ</h3>
+              <h3 className="text-base font-semibold text-[#111827] dark:text-slate-100">{t.auth.checkEmailTitle}</h3>
               <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-                စကားဝှက် ပြန်လည်သတ်မှတ်ရန် လင့်ခ်ကို {email} သို့ ပေးပို့လိုက်ပါပြီ။
+                {t.auth.checkEmailDesc} ({email})
               </p>
               <button
                 id="btn-return-signin"
@@ -278,7 +292,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                 }}
                 className="mt-6 w-full flex justify-center py-2 px-4 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition-colors cursor-pointer"
               >
-                အကောင့်ဝင်ရန် ပြန်သွားမည်
+                {t.auth.backToSignIn}
               </button>
             </div>
           ) : (
@@ -296,7 +310,7 @@ export default function Auth({ onShowToast }: AuthProps) {
               {mode === 'signup' && (
                 <div>
                   <label htmlFor="full-name" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                    အမည် အပြည့်အစုံ
+                    {t.auth.fullNameLabel}
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -307,7 +321,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                       name="fullName"
                       type="text"
                       required
-                      placeholder="ဦးမောင်မောင်"
+                      placeholder={t.auth.fullNamePlaceholder}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="block w-full pl-10 pr-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
@@ -318,7 +332,7 @@ export default function Auth({ onShowToast }: AuthProps) {
 
               <div>
                 <label htmlFor="email" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                  အီးမေးလ်
+                  {t.auth.emailLabel}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -330,10 +344,10 @@ export default function Auth({ onShowToast }: AuthProps) {
                     type="email"
                     autoComplete="email"
                     required
-                    placeholder="you@example.com"
+                    placeholder={t.auth.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
+                    className="block w-full pl-10 pr-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors"
                   />
                 </div>
               </div>
@@ -341,7 +355,7 @@ export default function Auth({ onShowToast }: AuthProps) {
               {mode !== 'forgot' && (
                 <div>
                   <label htmlFor="password" className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                    စကားဝှက်
+                    {t.auth.passwordLabel}
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -382,7 +396,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                       }}
                       className="font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors cursor-pointer"
                     >
-                      စကားဝှက် မေ့နေပါသလား?
+                      {t.auth.forgotPasswordLink}
                     </button>
                   </div>
                 </div>
@@ -398,11 +412,11 @@ export default function Auth({ onShowToast }: AuthProps) {
                   {loading ? (
                     <RefreshCw className="w-5 h-5 animate-spin" />
                   ) : mode === 'signin' ? (
-                    'အကောင့်ဝင်မည်'
+                    t.auth.signInBtn
                   ) : mode === 'signup' ? (
-                    'အကောင့်ဖွင့်မည်'
+                    t.auth.signUpBtn
                   ) : (
-                    'လင့်ခ် ပေးပို့မည်'
+                    t.auth.sendResetBtn
                   )}
                 </button>
               </div>
@@ -414,7 +428,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                       <div className="w-full border-t border-slate-100 dark:border-slate-800"></div>
                     </div>
                     <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-                      <span className="bg-white dark:bg-slate-900 px-2 text-slate-400 font-medium">အခြားနည်းလမ်းဖြင့် ဝင်မည်</span>
+                      <span className="bg-white dark:bg-slate-900 px-2 text-slate-400 font-medium">{t.auth.orContinueWith}</span>
                     </div>
                   </div>
 
@@ -426,7 +440,7 @@ export default function Auth({ onShowToast }: AuthProps) {
                     className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none disabled:opacity-50 transition-colors cursor-pointer"
                   >
                     <Chrome className="w-4 h-4 text-[#2563EB]" />
-                    Google ဖြင့် ဝင်ရောက်မည်
+                    {t.auth.googleSignIn}
                   </button>
                 </>
               )}

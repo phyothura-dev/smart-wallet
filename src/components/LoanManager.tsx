@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { Loan, LoanType, LoanStatus, LoanRepayment, Wallet, UserProfile, getWalletLabel } from '../types';
 import { getLocalDateString } from '../utils/finance';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 interface LoanManagerProps {
   loans: Loan[];
@@ -46,8 +48,10 @@ export default function LoanManager({
   onAddLoanRepayment,
   onDeleteLoanRepayment,
   onShowToast,
-  currencySymbol = profile?.currency ? `${profile.currency} ` : 'Ks '
+  currencySymbol: _currencySymbolProp
 }: LoanManagerProps) {
+  const { language, t } = useLanguage();
+  const { currencySymbol, baseCurrencySymbol, convertFromBase } = useCurrency();
   // filter states
   const [activeTab, setActiveTab] = useState<TabFilter>('all');
   const [search, setSearch] = useState('');
@@ -190,21 +194,26 @@ export default function LoanManager({
   const handleSubmitLoan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!personName.trim()) {
-      onShowToast('လူအမည် သို့မဟုတ် အဖွဲ့အစည်းအမည် ဖြည့်သွင်းပေးပါ။', 'error');
+      onShowToast(t.records.fillRequired, 'error');
       return;
     }
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      onShowToast('ငွေပမာဏသည် သုညထက် ကြီးရပါမည်။', 'error');
+      onShowToast(t.records.invalidAmount, 'error');
       return;
     }
     if (!walletId && wallets.length > 0) {
-      onShowToast('ပိုက်ဆံအိတ် ရွေးချယ်ပေးပါ။', 'error');
+      onShowToast(t.records.selectWallet, 'error');
       return;
     }
 
     if (editingLoan && parsedAmount < editingLoan.paidAmount) {
-      onShowToast(`ငွေပမာဏသည် ပြန်ဆပ်ပြီးငွေ (${currencySymbol}${editingLoan.paidAmount.toLocaleString()}) ထက် မနည်းရပါ။`, 'error');
+      onShowToast(
+        language === 'mm'
+          ? `ငွေပမာဏသည် ပြန်ဆပ်ပြီးငွေ (${baseCurrencySymbol}${editingLoan.paidAmount.toLocaleString()}) ထက် မနည်းရပါ။`
+          : `Amount cannot be less than paid amount (${baseCurrencySymbol}${editingLoan.paidAmount.toLocaleString()}).`,
+        'error'
+      );
       return;
     }
 
@@ -220,7 +229,7 @@ export default function LoanManager({
           walletId: walletId || wallets[0]?.id || '',
           note: note || undefined,
         });
-        onShowToast('ချေးငွေ အချက်အလက်ကို ပြင်ဆင်ပြီးပါပြီ။', 'success');
+        onShowToast(t.loans.editSuccess, 'success');
       } else {
         await onAddLoan({
           personName,
@@ -231,11 +240,11 @@ export default function LoanManager({
           walletId: walletId || wallets[0]?.id || '',
           note: note || undefined,
         });
-        onShowToast('ချေးငွေ မှတ်တမ်းအသစ် ထည့်သွင်းပြီးပါပြီ။', 'success');
+        onShowToast(t.loans.addSuccess, 'success');
       }
       setIsOpenLoanModal(false);
     } catch {
-      onShowToast('လုပ်ဆောင်မှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားကြည့်ပါ။', 'error');
+      onShowToast(t.records.actionError, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -246,9 +255,9 @@ export default function LoanManager({
     if (!deletingLoanId) return;
     try {
       await onDeleteLoan(deletingLoanId);
-      onShowToast('ချေးငွေ မှတ်တမ်းကို ဖျက်ပစ်ပြီးပါပြီ။', 'success');
+      onShowToast(t.loans.deleteSuccess, 'success');
     } catch {
-      onShowToast('ဖျက်ပစ်ရာတွင် အမှားဖြစ်ပေါ်ခဲ့ပါသည်။', 'error');
+      onShowToast(t.records.actionError, 'error');
     } finally {
       setDeletingLoanId(null);
     }
@@ -271,12 +280,12 @@ export default function LoanManager({
 
     const parsedRepay = parseFloat(repaymentAmount);
     if (isNaN(parsedRepay) || parsedRepay <= 0) {
-      onShowToast('ပြန်ဆပ်မည့် ပမာဏသည် သုညထက် ကြီးရပါမည်။', 'error');
+      onShowToast(t.records.invalidAmount, 'error');
       return;
     }
 
     if (parsedRepay > selectedLoanForRepayment.remainingAmount) {
-      onShowToast(`ပြန်ဆပ်မည့် ပမာဏသည် ကျန်ငွေ (${currencySymbol}${selectedLoanForRepayment.remainingAmount.toLocaleString()}) ထက် မကျော်ရပါ။`, 'error');
+      onShowToast(t.loans.repaymentExceedsError, 'error');
       return;
     }
 
@@ -288,10 +297,10 @@ export default function LoanManager({
         walletId: repaymentWalletId || selectedLoanForRepayment.walletId,
         note: repaymentNote || undefined,
       });
-      onShowToast('ပြန်ဆပ်မှု မှတ်တမ်းကို အောင်မြင်စွာ မှတ်သားပြီးပါပြီ။', 'success');
+      onShowToast(t.loans.repaymentSuccess, 'success');
       setIsOpenRepaymentModal(false);
     } catch {
-      onShowToast('ပြန်ဆပ်မှု ထည့်သွင်းရာတွင် အမှားဖြစ်ပေါ်ခဲ့ပါသည်။', 'error');
+      onShowToast(t.records.actionError, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -308,7 +317,7 @@ export default function LoanManager({
     if (!selectedLoanForHistory) return;
     try {
       await onDeleteLoanRepayment(selectedLoanForHistory.id, repaymentId);
-      onShowToast('ပြန်ဆပ်မှတ်တမ်းကို ပယ်ဖျက်ပြီးပါပြီ။', 'success');
+      onShowToast(t.records.deleteSuccess, 'success');
       // update local preview state
       const updatedList = (selectedLoanForHistory.repayments || []).filter((r) => r.id !== repaymentId);
       setSelectedLoanForHistory({
@@ -316,7 +325,7 @@ export default function LoanManager({
         repayments: updatedList,
       });
     } catch {
-      onShowToast('ပယ်ဖျက်ရာတွင် အမှားဖြစ်ပေါ်ခဲ့ပါသည်။', 'error');
+      onShowToast(t.records.actionError, 'error');
     }
   };
 
@@ -327,14 +336,14 @@ export default function LoanManager({
         {/* Total Lent (Receivable) */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">ရရန်ရှိ</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t.dashboard.toReceive}</span>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/60">
               <ArrowDownLeft className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-2.5">
             <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
-              {currencySymbol}{totalLentRemaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {currencySymbol}{convertFromBase(totalLentRemaining).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         </div>
@@ -342,14 +351,14 @@ export default function LoanManager({
         {/* Total Borrowed (Payable) */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">ပေးရန်ရှိ</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t.dashboard.toPay}</span>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/60">
               <ArrowUpRight className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-2.5">
             <div className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">
-              {currencySymbol}{totalBorrowedRemaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {currencySymbol}{convertFromBase(totalBorrowedRemaining).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         </div>
@@ -357,18 +366,18 @@ export default function LoanManager({
         {/* Active vs Completed count */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-2xs relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">ဆပ်ရန်ကျန်</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t.loans.activeLoansCount}</span>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-[#2563EB] dark:text-blue-400 border border-blue-100 dark:border-blue-900/60">
               <HandCoins className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-2.5 flex items-baseline gap-2">
             <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              {activeCount} <span className="text-sm font-medium text-slate-500 dark:text-slate-400">ခု</span>
+              {activeCount} <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{t.common.recordsCount}</span>
             </div>
             {completedCount > 0 && (
               <span className="text-[11px] font-medium text-slate-400">
-                (ကြေအေးပြီး {completedCount})
+                ({t.loans.statusCompleted} {completedCount})
               </span>
             )}
           </div>
@@ -379,7 +388,7 @@ export default function LoanManager({
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 pt-4 sm:pt-5 pb-3">
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">ချေးငွေနှင့် အကြွေးများ</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{t.nav.loans}</h3>
           <button
             id="btn-open-add-loan"
             type="button"
@@ -387,7 +396,7 @@ export default function LoanManager({
             className="flex items-center justify-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 sm:px-3.5 sm:py-1.5 text-xs font-semibold text-white hover:bg-[#1D4ED8] transition-all focus:outline-none cursor-pointer w-full sm:w-auto min-h-[40px] sm:min-h-0"
           >
             <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-            <span>+ အသစ်ထည့်မည်</span>
+            <span>+ {t.common.add}</span>
           </button>
         </div>
 
@@ -398,10 +407,10 @@ export default function LoanManager({
             <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800 p-1 rounded-lg sm:col-span-2 lg:col-span-5 overflow-x-auto scrollbar-none">
               {(
                 [
-                  { id: 'all', label: 'အားလုံး' },
-                  { id: 'lent', label: 'ရရန်ရှိ' },
-                  { id: 'borrowed', label: 'ပေးရန်ရှိ' },
-                  { id: 'completed', label: 'ကြေအေးပြီး' },
+                  { id: 'all', label: t.common.all },
+                  { id: 'lent', label: t.dashboard.toReceive },
+                  { id: 'borrowed', label: t.dashboard.toPay },
+                  { id: 'completed', label: t.loans.statusCompleted },
                 ] as { id: TabFilter; label: string }[]
               ).map((tab) => (
                 <button
@@ -425,7 +434,7 @@ export default function LoanManager({
               <input
                 id="loan-search-input"
                 type="text"
-                placeholder="ရှာဖွေပါ..."
+                placeholder={t.common.search}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
@@ -441,7 +450,7 @@ export default function LoanManager({
                   onChange={(e) => setWalletFilter(e.target.value)}
                   className="w-full appearance-none pl-3 pr-8 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
                 >
-                  <option value="all">ပိုက်ဆံအိတ်: အားလုံး</option>
+                  <option value="all">{t.records.allWallets}</option>
                   {wallets.map((w) => (
                     <option key={w.id} value={w.id}>
                       {getWalletLabel(w.type, w.name)}
@@ -460,7 +469,7 @@ export default function LoanManager({
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 mb-4">
               <HandCoins className="w-7 h-7" />
             </div>
-            <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base">မှတ်တမ်း မရှိသေးပါ</h4>
+            <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base">{t.loans.noLoans}</h4>
 
           </div>
         ) : filteredLoans.length === 0 ? (
@@ -468,7 +477,7 @@ export default function LoanManager({
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 mb-3">
               <Clock className="w-6 h-6" />
             </div>
-            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">မှတ်တမ်း မတွေ့ပါ</h4>
+            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{t.records.noFilteredResults}</h4>
             <button
               id="btn-reset-loan-filters"
               type="button"
@@ -479,7 +488,7 @@ export default function LoanManager({
               }}
               className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
-              စစ်ထုတ်မှု ရှင်းလင်းမည်
+              {t.common.clearFilters}
             </button>
           </div>
         ) : (
@@ -489,14 +498,14 @@ export default function LoanManager({
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
-                    <th className="py-3 px-6">အမည် / မှတ်ချက်</th>
-                    <th className="py-3 px-4">အမျိုးအစား</th>
-                    <th className="py-3 px-4">ပိုက်ဆံအိတ်</th>
-                    <th className="py-3 px-4 text-right">ပမာဏ</th>
-                    <th className="py-3 px-4">ဆပ်ပြီး / ကျန်ငွေ</th>
-                    <th className="py-3 px-4">သတ်မှတ်ရက်</th>
-                    <th className="py-3 px-4 text-center">အခြေအနေ</th>
-                    <th className="py-3 px-6 text-right">လုပ်ဆောင်ချက်</th>
+                    <th className="py-3 px-6">{t.loans.personName}</th>
+                    <th className="py-3 px-4">{t.transactions.typeLabel}</th>
+                    <th className="py-3 px-4">{t.common.wallet}</th>
+                    <th className="py-3 px-4 text-right">{t.common.amount}</th>
+                    <th className="py-3 px-4">{t.loans.paidAmount} / {t.loans.remainingAmount}</th>
+                    <th className="py-3 px-4">{t.loans.dueDate}</th>
+                    <th className="py-3 px-4 text-center">{language === 'mm' ? 'အခြေအနေ' : 'Status'}</th>
+                    <th className="py-3 px-6 text-right">{t.common.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs text-slate-700 dark:text-slate-300">
@@ -523,11 +532,11 @@ export default function LoanManager({
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           {loan.type === 'lent' ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900">
-                              <ArrowDownLeft className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> ရရန်ရှိ
+                              <ArrowDownLeft className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> {t.dashboard.toReceive}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900">
-                              <ArrowUpRight className="w-3 h-3 text-amber-600 dark:text-amber-400" /> ပေးရန်ရှိ
+                              <ArrowUpRight className="w-3 h-3 text-amber-600 dark:text-amber-400" /> {t.dashboard.toPay}
                             </span>
                           )}
                         </td>
@@ -542,13 +551,13 @@ export default function LoanManager({
 
                         {/* Original Amount */}
                         <td className="py-3.5 px-4 text-right font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">
-                          {currencySymbol}{loan.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {currencySymbol}{convertFromBase(loan.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
 
                         {/* Repaid Progress */}
                         <td className="py-3.5 px-4 whitespace-nowrap min-w-[150px]">
                           <div className="flex justify-between items-center text-[11px] mb-1 font-medium">
-                            <span className="text-slate-500 dark:text-slate-400">ဆပ်ပြီး: {currencySymbol}{loan.paidAmount.toLocaleString()}</span>
+                            <span className="text-slate-500 dark:text-slate-400">{t.loans.paidAmount}: {currencySymbol}{convertFromBase(loan.paidAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                             <span className="font-bold text-slate-700 dark:text-slate-200">{percent}%</span>
                           </div>
                           <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -564,7 +573,7 @@ export default function LoanManager({
                             />
                           </div>
                           <p className="text-[10px] text-slate-400 mt-0.5">
-                            ကျန်ငွေ: <span className="font-semibold text-slate-700 dark:text-slate-200">{currencySymbol}{loan.remainingAmount.toLocaleString()}</span>
+                            {t.loans.remainingAmount}: <span className="font-semibold text-slate-700 dark:text-slate-200">{currencySymbol}{convertFromBase(loan.remainingAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                           </p>
                         </td>
 
@@ -578,12 +587,12 @@ export default function LoanManager({
                               </span>
                               {overdue && (
                                 <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.2 rounded border border-rose-200 dark:border-rose-900">
-                                  <AlertCircle className="w-2.5 h-2.5" /> ရက်လွန်နေပြီ
+                                  <AlertCircle className="w-2.5 h-2.5" /> {t.loans.overdue}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-slate-400 text-[11px]">မသတ်မှတ်ထားပါ</span>
+                            <span className="text-slate-400 text-[11px]">-</span>
                           )}
                         </td>
 
@@ -591,15 +600,15 @@ export default function LoanManager({
                         <td className="py-3.5 px-4 text-center whitespace-nowrap">
                           {loan.status === 'completed' ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
-                              <CheckCircle2 className="w-3 h-3" /> ကြေအေးပြီး
+                              <CheckCircle2 className="w-3 h-3" /> {t.loans.statusCompleted}
                             </span>
                           ) : loan.status === 'partial' ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400">
-                              <Clock className="w-3 h-3" /> တစ်စိတ်တစ်ပိုင်း
+                              <Clock className="w-3 h-3" /> {t.loans.statusPartial}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                              <Clock className="w-3 h-3" /> ဆပ်ရန်ကျန်
+                              <Clock className="w-3 h-3" /> {t.loans.statusPending}
                             </span>
                           )}
                         </td>
@@ -613,9 +622,9 @@ export default function LoanManager({
                                 type="button"
                                 onClick={() => handleOpenRepaymentModal(loan)}
                                 className="px-2.5 py-1 text-[11px] font-semibold rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950 transition-colors cursor-pointer"
-                                title="ပြန်ဆပ်မှတ်တမ်း ထည့်မည်"
+                                title={t.loans.addRepayment}
                               >
-                                {loan.type === 'lent' ? 'လက်ခံမည်' : 'ဆပ်မည်'}
+                                {loan.type === 'lent' ? (language === 'mm' ? 'လက်ခံမည်' : 'Receive') : (language === 'mm' ? 'ဆပ်မည်' : 'Repay')}
                               </button>
                             )}
 
@@ -624,7 +633,7 @@ export default function LoanManager({
                               type="button"
                               onClick={() => handleOpenHistoryModal(loan)}
                               className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                              title="ပြန်ဆပ်မှတ်တမ်းများ ကြည့်မည်"
+                              title={t.loans.repaymentHistory}
                             >
                               <History className="w-4 h-4" />
                             </button>
@@ -634,7 +643,7 @@ export default function LoanManager({
                               type="button"
                               onClick={() => handleOpenEditModal(loan)}
                               className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                              title="ပြင်ဆင်မည်"
+                              title={t.common.edit}
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
@@ -644,7 +653,7 @@ export default function LoanManager({
                               type="button"
                               onClick={() => setDeletingLoanId(loan.id)}
                               className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
-                              title="ဖျက်ပစ်မည်"
+                              title={t.common.delete}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -679,11 +688,11 @@ export default function LoanManager({
                       <div>
                         {loan.type === 'lent' ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900">
-                            <ArrowDownLeft className="w-2.5 h-2.5" /> ရရန်ရှိ
+                            <ArrowDownLeft className="w-2.5 h-2.5" /> {t.dashboard.toReceive}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900">
-                            <ArrowUpRight className="w-2.5 h-2.5" /> ပေးရန်ရှိ
+                            <ArrowUpRight className="w-2.5 h-2.5" /> {t.dashboard.toPay}
                           </span>
                         )}
                       </div>
@@ -692,9 +701,9 @@ export default function LoanManager({
                     {/* Middle Info: Amount & Progress */}
                     <div className="bg-slate-50/80 dark:bg-slate-800/60 rounded-lg p-3 space-y-2 border border-slate-100 dark:border-slate-800">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">မူလငွေ: {currencySymbol}{loan.amount.toLocaleString()}</span>
+                        <span className="text-slate-500 dark:text-slate-400">{t.loans.principalAmount}: {currencySymbol}{convertFromBase(loan.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                         <span className="font-bold text-slate-900 dark:text-slate-100">
-                          ကျန်ငွေ: {currencySymbol}{loan.remainingAmount.toLocaleString()}
+                          {t.loans.remainingAmount}: {currencySymbol}{convertFromBase(loan.remainingAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-200/70 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -710,7 +719,7 @@ export default function LoanManager({
                         />
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-slate-400">
-                        <span>ဆပ်ပြီး: {currencySymbol}{loan.paidAmount.toLocaleString()}</span>
+                        <span>{t.loans.paidAmount}: {currencySymbol}{convertFromBase(loan.paidAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                         <span className="font-semibold text-slate-700 dark:text-slate-200">{percent}%</span>
                       </div>
                     </div>
@@ -725,8 +734,8 @@ export default function LoanManager({
                         {loan.dueDate && (
                           <div className="text-[10px] text-slate-400 flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            <span>သတ်မှတ်ရက်: {loan.dueDate}</span>
-                            {overdue && <span className="text-rose-600 font-bold">(ရက်လွန်)</span>}
+                            <span>{t.loans.dueDate}: {loan.dueDate}</span>
+                            {overdue && <span className="text-rose-600 font-bold">({t.loans.overdue})</span>}
                           </div>
                         )}
                       </div>
@@ -738,14 +747,14 @@ export default function LoanManager({
                             onClick={() => handleOpenRepaymentModal(loan)}
                             className="px-2.5 py-1 text-xs font-semibold rounded-md bg-[#2563EB] text-white hover:bg-[#1D4ED8] transition-colors cursor-pointer"
                           >
-                            {loan.type === 'lent' ? 'လက်ခံမည်' : 'ဆပ်မည်'}
+                            {loan.type === 'lent' ? (language === 'mm' ? 'လက်ခံမည်' : 'Receive') : (language === 'mm' ? 'ဆပ်မည်' : 'Repay')}
                           </button>
                         )}
                         <button
                           type="button"
                           onClick={() => handleOpenHistoryModal(loan)}
                           className="p-1.5 text-slate-500 hover:text-blue-600 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
-                          title="မှတ်တမ်း"
+                          title={t.loans.repaymentHistory}
                         >
                           <History className="w-4 h-4" />
                         </button>
@@ -753,7 +762,7 @@ export default function LoanManager({
                           type="button"
                           onClick={() => handleOpenEditModal(loan)}
                           className="p-1.5 text-slate-500 hover:text-slate-700 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
-                          title="ပြင်ဆင်မည်"
+                          title={t.common.edit}
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -761,7 +770,7 @@ export default function LoanManager({
                           type="button"
                           onClick={() => setDeletingLoanId(loan.id)}
                           className="p-1.5 text-slate-500 hover:text-rose-600 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="ဖျက်မည်"
+                          title={t.common.delete}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -781,7 +790,7 @@ export default function LoanManager({
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                {editingLoan ? 'ချေးငွေ ပြင်ဆင်မည်' : 'ချေးငွေ အသစ်ထည့်မည်'}
+                {editingLoan ? t.loans.editLoan : t.loans.addLoan}
               </h3>
               <button
                 type="button"
@@ -795,7 +804,7 @@ export default function LoanManager({
             <form onSubmit={handleSubmitLoan} className="mt-4 space-y-4">
               {/* Type Switcher */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">အမျိုးအစား</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t.transactions.typeLabel}</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -807,7 +816,7 @@ export default function LoanManager({
                     }`}
                   >
                     <ArrowDownLeft className="w-3.5 h-3.5" />
-                    <span>ရရန်ရှိ</span>
+                    <span>{t.dashboard.toReceive}</span>
                   </button>
                   <button
                     type="button"
@@ -819,7 +828,7 @@ export default function LoanManager({
                     }`}
                   >
                     <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>ပေးရန်ရှိ</span>
+                    <span>{t.dashboard.toPay}</span>
                   </button>
                 </div>
               </div>
@@ -827,11 +836,11 @@ export default function LoanManager({
               {/* Person Name */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  လူအမည် <span className="text-rose-500">*</span>
+                  {t.loans.personName} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="အမည်..."
+                  placeholder={t.loans.personPlaceholder}
                   value={personName}
                   onChange={(e) => setPersonName(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -842,7 +851,7 @@ export default function LoanManager({
               {/* Amount */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  ငွေပမာဏ ({currencySymbol.trim()}) <span className="text-rose-500">*</span>
+                  {t.common.amount} ({baseCurrencySymbol.trim()}) <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -859,7 +868,7 @@ export default function LoanManager({
               {wallets.length > 0 && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    ပိုက်ဆံအိတ် <span className="text-rose-500">*</span>
+                    {t.common.wallet} <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={walletId}
@@ -880,7 +889,7 @@ export default function LoanManager({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    ရက်စွဲ <span className="text-rose-500">*</span>
+                    {t.loans.startDate} <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -892,7 +901,7 @@ export default function LoanManager({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    သတ်မှတ်ရက်
+                    {t.loans.dueDate}
                   </label>
                   <input
                     type="date"
@@ -905,10 +914,10 @@ export default function LoanManager({
 
               {/* Note */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">မှတ်ချက်</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t.common.note}</label>
                 <input
                   type="text"
-                  placeholder="မှတ်ချက်..."
+                  placeholder={t.common.note}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-blue-500"
@@ -923,7 +932,7 @@ export default function LoanManager({
                   disabled={isSubmitting}
                   className="flex-1 py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  မလုပ်တော့ပါ
+                  {t.common.cancel}
                 </button>
                 <button
                   type="submit"
@@ -931,7 +940,7 @@ export default function LoanManager({
                   className="flex-1 py-2 px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>{isSubmitting ? 'သိမ်းဆည်းနေသည်...' : 'သိမ်းဆည်းမည်'}</span>
+                  <span>{isSubmitting ? t.common.saving : t.common.save}</span>
                 </button>
               </div>
             </form>
@@ -945,7 +954,7 @@ export default function LoanManager({
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-                {selectedLoanForRepayment.type === 'lent' ? 'ငွေလက်ခံမည်' : 'ငွေဆပ်မည်'}
+                {t.loans.addRepayment}
               </h3>
               <button
                 type="button"
@@ -960,12 +969,12 @@ export default function LoanManager({
             <div className="mt-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 rounded-xl p-3 space-y-1">
               <div className="flex justify-between items-center text-xs">
                 <span className="font-semibold text-slate-800 dark:text-slate-100">{selectedLoanForRepayment.personName}</span>
-                <span className="text-slate-500 dark:text-slate-400">မူလ: {currencySymbol}{selectedLoanForRepayment.amount.toLocaleString()}</span>
+                <span className="text-slate-500 dark:text-slate-400">{t.loans.principalAmount}: {baseCurrencySymbol}{selectedLoanForRepayment.amount.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/60 dark:border-slate-700">
-                <span className="text-slate-600 dark:text-slate-300">ကျန်ရှိငွေ:</span>
+                <span className="text-slate-600 dark:text-slate-300">{t.loans.remainingAmount}:</span>
                 <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">
-                  {currencySymbol}{selectedLoanForRepayment.remainingAmount.toLocaleString()}
+                  {baseCurrencySymbol}{selectedLoanForRepayment.remainingAmount.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -975,14 +984,14 @@ export default function LoanManager({
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    ပမာဏ ({currencySymbol.trim()}) <span className="text-rose-500">*</span>
+                    {t.loans.repaymentAmount} ({baseCurrencySymbol.trim()}) <span className="text-rose-500">*</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setRepaymentAmount(selectedLoanForRepayment.remainingAmount.toString())}
                     className="text-[11px] font-semibold text-[#2563EB] dark:text-blue-400 hover:underline cursor-pointer"
                   >
-                    အပြည့်ဆပ်မည်
+                    {language === 'mm' ? 'အပြည့်ဆပ်မည်' : 'Pay Full'}
                   </button>
                 </div>
                 <input
@@ -1001,7 +1010,7 @@ export default function LoanManager({
               {wallets.length > 0 && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    ပိုက်ဆံအိတ် <span className="text-rose-500">*</span>
+                    {t.loans.repaymentWallet} <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={repaymentWalletId}
@@ -1021,7 +1030,7 @@ export default function LoanManager({
               {/* Date */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  ရက်စွဲ <span className="text-rose-500">*</span>
+                  {t.loans.repaymentDate} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -1034,10 +1043,10 @@ export default function LoanManager({
 
               {/* Note */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">မှတ်ချက်</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t.common.note}</label>
                 <input
                   type="text"
-                  placeholder="မှတ်ချက်..."
+                  placeholder={t.common.note}
                   value={repaymentNote}
                   onChange={(e) => setRepaymentNote(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-blue-500"
@@ -1052,7 +1061,7 @@ export default function LoanManager({
                   disabled={isSubmitting}
                   className="flex-1 py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  မလုပ်တော့ပါ
+                  {t.common.cancel}
                 </button>
                 <button
                   type="submit"
@@ -1060,7 +1069,7 @@ export default function LoanManager({
                   className="flex-1 py-2 px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>{isSubmitting ? 'သိမ်းဆည်းနေသည်...' : selectedLoanForRepayment.type === 'lent' ? 'လက်ခံမည်' : 'ဆပ်မည်'}</span>
+                  <span>{isSubmitting ? t.common.saving : selectedLoanForRepayment.type === 'lent' ? (language === 'mm' ? 'လက်ခံမည်' : 'Receive') : (language === 'mm' ? 'ဆပ်မည်' : 'Repay')}</span>
                 </button>
               </div>
             </form>
@@ -1074,9 +1083,9 @@ export default function LoanManager({
           <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">ပြန်ဆပ်မှတ်တမ်း</h3>
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">{t.loans.repaymentHistory}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {selectedLoanForHistory.personName} ({selectedLoanForHistory.type === 'lent' ? 'ရရန်ရှိ' : 'ပေးရန်ရှိ'})
+                  {selectedLoanForHistory.personName} ({selectedLoanForHistory.type === 'lent' ? t.dashboard.toReceive : t.dashboard.toPay})
                 </p>
               </div>
               <button
@@ -1092,7 +1101,7 @@ export default function LoanManager({
             <div className="mt-4 max-h-72 overflow-y-auto space-y-2.5 pr-1">
               {!selectedLoanForHistory.repayments || selectedLoanForHistory.repayments.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 text-xs">
-                  မှတ်တမ်း မရှိသေးပါ။
+                  {t.common.noData}
                 </div>
               ) : (
                 selectedLoanForHistory.repayments.map((rep) => (
@@ -1102,7 +1111,7 @@ export default function LoanManager({
                   >
                     <div>
                       <div className="font-bold text-slate-900 dark:text-slate-100">
-                        {currencySymbol}{rep.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {currencySymbol}{convertFromBase(rep.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
                         <span className="flex items-center gap-1">
@@ -1120,7 +1129,7 @@ export default function LoanManager({
                       type="button"
                       onClick={() => handleDeleteRepaymentItem(rep.id)}
                       className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg transition-colors cursor-pointer"
-                      title="ဤပြန်ဆပ်မှုကို ပယ်ဖျက်မည်"
+                      title={t.common.delete}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1135,7 +1144,7 @@ export default function LoanManager({
                 onClick={() => setIsOpenHistoryModal(false)}
                 className="py-2 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors cursor-pointer"
               >
-                ပိတ်မည်
+                {t.common.close}
               </button>
             </div>
           </div>
@@ -1149,9 +1158,9 @@ export default function LoanManager({
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto mb-3">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-slate-900 dark:text-slate-100 text-base">ဖျက်ပစ်မည်လား?</h4>
+            <h4 className="font-bold text-slate-900 dark:text-slate-100 text-base">{t.common.delete}?</h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
-              ဤချေးငွေမှတ်တမ်းကို အပြီးတိုင် ဖျက်ပစ်ပါမည်။
+              {t.loans.deleteConfirm}
             </p>
             <div className="flex gap-2.5 mt-5">
               <button
@@ -1159,14 +1168,14 @@ export default function LoanManager({
                 onClick={() => setDeletingLoanId(null)}
                 className="flex-1 py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                မလုပ်တော့ပါ
+                {t.common.cancel}
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDeleteLoan}
                 className="flex-1 py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer"
               >
-                ဖျက်မည်
+                {t.common.delete}
               </button>
             </div>
           </div>

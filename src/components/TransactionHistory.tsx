@@ -14,6 +14,8 @@ import { Income, Expense, Category, UserProfile, Transaction, Wallet, getWalletL
 import Pagination from './Pagination';
 import { exportTransactionsToCSV } from '../utils/export';
 import { getCurrentMonthRange } from '../utils/finance';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 type TxSortField = 'type' | 'title' | 'category' | 'wallet' | 'date' | 'amount';
 type SortOrder = 'asc' | 'desc';
@@ -35,7 +37,8 @@ export default function TransactionHistory({
   profile: _profile,
   onShowToast,
 }: TransactionHistoryProps) {
-  const currencySymbol = 'Ks ';
+  const { language, t } = useLanguage();
+  const { currencySymbol, convertFromBase } = useCurrency();
 
   // default date range to current month
   const currentMonth = useMemo(() => getCurrentMonthRange(), []);
@@ -202,17 +205,21 @@ export default function TransactionHistory({
 
   const handleExportExcel = () => {
     if (filteredTransactions.length === 0) {
-      if (onShowToast) onShowToast('ထုတ်ယူရန် စာရင်းမှတ်တမ်း မရှိပါ။', 'error');
+      if (onShowToast) onShowToast(t.transactions.noTransactions, 'error');
       return;
     }
     try {
-      exportTransactionsToCSV(filteredTransactions, wallets, currencySymbol);
+      const convertedRows = filteredTransactions.map((tx) => ({
+        ...tx,
+        amount: convertFromBase(tx.amount),
+      }));
+      exportTransactionsToCSV(convertedRows, wallets, currencySymbol);
       if (onShowToast) {
-        onShowToast(`စာရင်း ${filteredTransactions.length} ခုကို Excel/CSV အဖြစ် အောင်မြင်စွာ ထုတ်ယူပြီးပါပြီ။`, 'success');
+        onShowToast(t.transactions.exportSuccess, 'success');
       }
     } catch {
       if (onShowToast) {
-        onShowToast('Excel ထုတ်ယူရာတွင် အမှားဖြစ်ပေါ်ခဲ့ပါသည်။', 'error');
+        onShowToast(t.records.actionError, 'error');
       }
     }
   };
@@ -220,10 +227,10 @@ export default function TransactionHistory({
   return (
     <div className="space-y-6">
       {/* Search & Filter Header Container */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 p-4 sm:p-5 space-y-3.5 shadow-2xs">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 space-y-3.5 shadow-2xs">
         {/* Title & Export Action Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">မှတ်တမ်းအားလုံး</h3>
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">{t.transactions.title}</h3>
 
           <button
             id="btn-export-excel"
@@ -231,10 +238,10 @@ export default function TransactionHistory({
             onClick={handleExportExcel}
             disabled={filteredTransactions.length === 0}
             className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition-all focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-xs self-stretch sm:self-auto"
-            title="Excel ဖိုင်အဖြစ် ဒေါင်းလုဒ်ရယူပါ"
+            title={t.common.exportCsv}
           >
             <FileSpreadsheet className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>Excel ထုတ်ယူမည်</span>
+            <span>{t.common.exportCsv}</span>
           </button>
         </div>
 
@@ -246,7 +253,7 @@ export default function TransactionHistory({
             <input
               id="tx-search-input"
               type="text"
-              placeholder="ရှာဖွေပါ..."
+              placeholder={t.common.search}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
@@ -261,9 +268,9 @@ export default function TransactionHistory({
               onChange={(e) => setTypeFilter(e.target.value as 'all' | 'income' | 'expense')}
               className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
             >
-              <option value="all">အမျိုးအစား: အားလုံး</option>
-              <option value="income">ဝင်ငွေ</option>
-              <option value="expense">ထွက်ငွေ</option>
+              <option value="all">{t.transactions.typeLabel}: {t.common.all}</option>
+              <option value="income">{t.transactions.incomeBadge}</option>
+              <option value="expense">{t.transactions.expenseBadge}</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
           </div>
@@ -277,7 +284,7 @@ export default function TransactionHistory({
                 onChange={(e) => setWalletFilter(e.target.value)}
                 className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
               >
-                <option value="all">ပိုက်ဆံအိတ်: အားလုံး</option>
+                <option value="all">{t.records.allWallets}</option>
                 {wallets.map((w) => (
                   <option key={w.id} value={w.id}>
                     {getWalletLabel(w.type, w.name)}
@@ -316,20 +323,20 @@ export default function TransactionHistory({
       </div>
 
       {/* Transactions Data Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
         {filteredTransactions.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-20 px-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 mb-4">
               <Clock className="w-6 h-6" />
             </div>
-            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-base">မှတ်တမ်း မတွေ့ပါ</h4>
+            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-base">{t.transactions.noTransactions}</h4>
             {allTransactions.length > 0 && (
               <button
                 id="btn-reset-filters-empty-state"
                 onClick={handleClearFilters}
                 className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
-                စစ်ထုတ်မှု ရှင်းလင်းမည်
+                {t.common.clearFilters}
               </button>
             )}
           </div>
@@ -345,7 +352,7 @@ export default function TransactionHistory({
                       className="py-3.5 px-6 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span>အမျိုးအစား</span>
+                        <span>{t.transactions.typeLabel}</span>
                         {renderSortIcon('type')}
                       </div>
                     </th>
@@ -354,7 +361,7 @@ export default function TransactionHistory({
                       className="py-3.5 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span>ခေါင်းစဉ်</span>
+                        <span>{t.common.title}</span>
                         {renderSortIcon('title')}
                       </div>
                     </th>
@@ -363,7 +370,7 @@ export default function TransactionHistory({
                       className="py-3.5 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span>ခေါင်းစဉ်အုပ်စု</span>
+                        <span>{t.common.category}</span>
                         {renderSortIcon('category')}
                       </div>
                     </th>
@@ -373,7 +380,7 @@ export default function TransactionHistory({
                         className="py-3.5 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
                       >
                         <div className="flex items-center gap-1.5">
-                          <span>ပိုက်ဆံအိတ်</span>
+                          <span>{t.common.wallet}</span>
                           {renderSortIcon('wallet')}
                         </div>
                       </th>
@@ -383,7 +390,7 @@ export default function TransactionHistory({
                       className="py-3.5 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span>ရက်စွဲ</span>
+                        <span>{t.common.date}</span>
                         {renderSortIcon('date')}
                       </div>
                     </th>
@@ -392,7 +399,7 @@ export default function TransactionHistory({
                       className="py-3.5 px-6 text-right cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
                     >
                       <div className="flex items-center justify-end gap-1.5">
-                        <span>ပမာဏ</span>
+                        <span>{t.common.amount}</span>
                         {renderSortIcon('amount')}
                       </div>
                     </th>
@@ -410,12 +417,12 @@ export default function TransactionHistory({
                           {tx.type === 'income' ? (
                             <>
                               <ArrowUpRight className="w-3.5 h-3.5 text-[#059669] dark:text-emerald-400" />
-                              ဝင်ငွေ
+                              {t.transactions.incomeBadge}
                             </>
                           ) : (
                             <>
                               <ArrowDownRight className="w-3.5 h-3.5 text-[#DC2626] dark:text-rose-400" />
-                              ထွက်ငွေ
+                              {t.transactions.expenseBadge}
                             </>
                           )}
                         </span>
@@ -443,7 +450,7 @@ export default function TransactionHistory({
                       }`}>
                         {tx.type === 'income' ? '+' : '-'}
                         {currencySymbol}
-                        {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {convertFromBase(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>
                   ))}
@@ -452,20 +459,20 @@ export default function TransactionHistory({
                   {typeFilter === 'income' && (
                     <tr>
                       <td colSpan={wallets.length > 0 ? 5 : 4} className="py-3.5 px-6">
-                        စုစုပေါင်း ဝင်ငွေ ({filteredTransactions.length} ခု)
+                        {t.common.total} {t.transactions.incomeBadge} ({filteredTransactions.length} {t.common.recordsCount})
                       </td>
                       <td className="py-3.5 px-6 text-right font-bold text-base text-[#059669] dark:text-emerald-400">
-                        +{currencySymbol}{totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        +{currencySymbol}{convertFromBase(totalIncome).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>
                   )}
                   {typeFilter === 'expense' && (
                     <tr>
                       <td colSpan={wallets.length > 0 ? 5 : 4} className="py-3.5 px-6">
-                        စုစုပေါင်း ထွက်ငွေ ({filteredTransactions.length} ခု)
+                        {t.common.total} {t.transactions.expenseBadge} ({filteredTransactions.length} {t.common.recordsCount})
                       </td>
                       <td className="py-3.5 px-6 text-right font-bold text-base text-[#DC2626] dark:text-rose-400">
-                        -{currencySymbol}{totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        -{currencySymbol}{convertFromBase(totalExpense).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>
                   )}
@@ -473,20 +480,20 @@ export default function TransactionHistory({
                     <tr>
                       <td colSpan={wallets.length > 0 ? 5 : 4} className="py-3.5 px-6">
                         <div className="flex items-center gap-3.5 flex-wrap">
-                          <span className="font-bold text-slate-900 dark:text-slate-100">စုစုပေါင်း ({filteredTransactions.length} ခု):</span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100">{t.common.total} ({filteredTransactions.length} {t.common.recordsCount}):</span>
                           <span className="text-xs font-semibold text-[#059669] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-100 dark:border-emerald-900">
-                            ဝင်ငွေ: +{currencySymbol}{totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {t.transactions.incomeBadge}: +{currencySymbol}{convertFromBase(totalIncome).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           <span className="text-xs font-semibold text-[#DC2626] dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded border border-rose-100 dark:border-rose-900">
-                            ထွက်ငွေ: -{currencySymbol}{totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {t.transactions.expenseBadge}: -{currencySymbol}{convertFromBase(totalExpense).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </div>
                       </td>
                       <td className="py-3.5 px-6 text-right">
                         <div className="flex flex-col items-end">
-                          <span className="text-[10px] text-slate-400 font-medium">အသားတင်</span>
+                          <span className="text-[10px] text-slate-400 font-medium">{language === 'mm' ? 'အသားတင်' : 'Net'}</span>
                           <span className={`font-bold text-base ${netTotal >= 0 ? 'text-[#059669] dark:text-emerald-400' : 'text-[#DC2626] dark:text-rose-400'}`}>
-                            {netTotal >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(netTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {netTotal >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(convertFromBase(netTotal)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </div>
                       </td>
@@ -511,12 +518,12 @@ export default function TransactionHistory({
                           {tx.type === 'income' ? (
                             <>
                               <ArrowUpRight className="w-3 h-3 text-[#059669] dark:text-emerald-400" />
-                              ဝင်ငွေ
+                              {t.transactions.incomeBadge}
                             </>
                           ) : (
                             <>
                               <ArrowDownRight className="w-3 h-3 text-[#DC2626] dark:text-rose-400" />
-                              ထွက်ငွေ
+                              {t.transactions.expenseBadge}
                             </>
                           )}
                         </span>
@@ -538,7 +545,7 @@ export default function TransactionHistory({
                       }`}>
                         {tx.type === 'income' ? '+' : '-'}
                         {currencySymbol}
-                        {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {convertFromBase(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
@@ -549,38 +556,38 @@ export default function TransactionHistory({
               <div className="p-4 bg-slate-50 dark:bg-slate-800/70 border-t-2 border-slate-200 dark:border-slate-700 space-y-2 font-semibold text-xs">
                 {typeFilter === 'income' && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-700 dark:text-slate-200">စုစုပေါင်း ဝင်ငွေ ({filteredTransactions.length} ခု):</span>
+                    <span className="text-slate-700 dark:text-slate-200">{t.common.total} {t.transactions.incomeBadge} ({filteredTransactions.length} {t.common.recordsCount}):</span>
                     <span className="font-bold text-[#059669] dark:text-emerald-400 text-base">
-                      +{currencySymbol}{totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      +{currencySymbol}{convertFromBase(totalIncome).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 )}
                 {typeFilter === 'expense' && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-700 dark:text-slate-200">စုစုပေါင်း ထွက်ငွေ ({filteredTransactions.length} ခု):</span>
+                    <span className="text-slate-700 dark:text-slate-200">{t.common.total} {t.transactions.expenseBadge} ({filteredTransactions.length} {t.common.recordsCount}):</span>
                     <span className="font-bold text-[#DC2626] dark:text-rose-400 text-base">
-                      -{currencySymbol}{totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      -{currencySymbol}{convertFromBase(totalExpense).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 )}
                 {typeFilter === 'all' && (
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                      <span>စုစုပေါင်း ဝင်ငွေ:</span>
+                      <span>{t.common.total} {t.transactions.incomeBadge}:</span>
                       <span className="font-bold text-[#059669] dark:text-emerald-400">
-                        +{currencySymbol}{totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        +{currencySymbol}{convertFromBase(totalIncome).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                      <span>စုစုပေါင်း ထွက်ငွေ:</span>
+                      <span>{t.common.total} {t.transactions.expenseBadge}:</span>
                       <span className="font-bold text-[#DC2626] dark:text-rose-400">
-                        -{currencySymbol}{totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        -{currencySymbol}{convertFromBase(totalExpense).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700 text-sm font-bold">
-                      <span className="text-slate-800 dark:text-slate-100">အသားတင် လက်ကျန်ငွေ:</span>
+                      <span className="text-slate-800 dark:text-slate-100">{t.dashboard.netCashflow}:</span>
                       <span className={netTotal >= 0 ? 'text-[#059669] dark:text-emerald-400' : 'text-[#DC2626] dark:text-rose-400'}>
-                        {netTotal >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(netTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {netTotal >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(convertFromBase(netTotal)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>

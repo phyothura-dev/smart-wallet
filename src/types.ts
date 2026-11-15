@@ -4,6 +4,7 @@ export interface UserProfile {
   fullName: string;
   photoURL: string;
   currency: string;
+  exchangeRates?: Record<string, number>;
   monthlyIncomeGoal: number | null;
   telegramChatId?: string;
   telegramUsername?: string | null;

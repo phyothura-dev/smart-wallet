@@ -4,6 +4,8 @@ import { auth } from './lib/firebase';
 import { useUserData } from './hooks/useUserData';
 import { usePWA } from './hooks/usePWA';
 import { useTheme } from './hooks/useTheme';
+import { useLanguage } from './contexts/LanguageContext';
+import { CurrencyProvider } from './contexts/CurrencyContext';
 
 // layout components
 import Auth from './components/Auth';
@@ -25,15 +27,17 @@ const ProfileManager = lazy(() => import('./components/ProfileManager'));
 const LoanManager = lazy(() => import('./components/LoanManager'));
 
 function ViewLoadingSpinner() {
+  const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center justify-center py-24 text-slate-500 dark:text-slate-400">
       <RefreshCw className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 mb-2" />
-      <p className="text-xs font-semibold">စာမျက်နှာ ဖွင့်နေပါသည်...</p>
+      <p className="text-xs font-semibold">{t.app.loadingPage}</p>
     </div>
   );
 }
 
 export default function App() {
+  const { t } = useLanguage();
   // auth state
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -41,6 +45,24 @@ export default function App() {
   // navigation state
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('smartwallet-sidebar-collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const toggleSidebarCollapsed = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('smartwallet-sidebar-collapsed', String(next));
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
 
   // pwa state
   const { isInstallable, isOnline, isUpdateAvailable, installApp, updateApp } = usePWA();
@@ -112,10 +134,10 @@ export default function App() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      handleShowToast('အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ။', 'info');
+      handleShowToast(t.app.signOutSuccess, 'info');
       setCurrentTab('dashboard');
     } catch {
-      handleShowToast('အကောင့်မှ ထွက်ခြင်း မအောင်မြင်ပါ။ ထပ်မံကြိုးစားကြည့်ပါ။', 'error');
+      handleShowToast(t.app.signOutError, 'error');
     }
   };
 
@@ -229,13 +251,13 @@ export default function App() {
               onClick={() => window.location.reload()}
               className="flex-1 flex justify-center py-2 px-4 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer"
             >
-              ပြန်လည်ချိတ်ဆက်မည်
+              {t.app.reloadBtn}
             </button>
             <button
               onClick={handleSignOut}
               className="px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
             >
-              အကောင့်မှ ထွက်မည်
+              {t.app.signOutBtn}
             </button>
           </div>
         </div>
@@ -254,14 +276,15 @@ export default function App() {
         />
         <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm font-semibold">
           <RefreshCw className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
-          အချက်အလက်များကို ချိတ်ဆက်ရယူနေပါသည်...
+          {t.app.loadingData}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#F9FAFB] dark:bg-slate-950 transition-colors duration-200">
+    <CurrencyProvider profile={profile}>
+      <div className="flex h-screen w-screen overflow-hidden bg-[#F9FAFB] dark:bg-slate-950 transition-colors duration-200">
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={handleCloseToast} />
 
@@ -273,6 +296,8 @@ export default function App() {
         onSignOut={handleSignOut}
         isMobileOpen={mobileSidebarOpen}
         onCloseMobile={() => setMobileSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapsed}
         isInstallable={isInstallable}
         onInstallApp={installApp}
       />
@@ -404,5 +429,6 @@ export default function App() {
         </main>
       </div>
     </div>
+    </CurrencyProvider>
   );
 }

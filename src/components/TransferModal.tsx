@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowRightLeft, X } from "lucide-react";
 import { Wallet, Transfer, getWalletLabel } from "../types";
 import { getLocalDateString } from "../utils/finance";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export default function TransferModal({
   onAddTransfer,
   onShowToast,
 }: TransferModalProps) {
+  const { t } = useLanguage();
   const [transferFrom, setTransferFrom] = useState("");
   const [transferTo, setTransferTo] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
@@ -52,23 +54,20 @@ export default function TransferModal({
     if (!onAddTransfer) return;
 
     if (!transferFrom || !transferTo) {
-      onShowToast("ငွေလွှဲမည့် အကောင့်များကို ရွေးချယ်ပေးပါ။", "error");
+      onShowToast(t.records.fillRequired, "error");
       return;
     }
     if (transferFrom === transferTo) {
-      onShowToast(
-        "ငွေလွှဲမည့် အကောင့်နှင့် လက်ခံမည့် အကောင့် မတူညီရပါ။",
-        "error",
-      );
+      onShowToast(t.wallets.sameWalletError, "error");
       return;
     }
     const parsedAmount = parseFloat(transferAmount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      onShowToast("ငွေလွှဲပမာဏသည် သုညထက် ကြီးရပါမည်။", "error");
+      onShowToast(t.records.invalidAmount, "error");
       return;
     }
     if (!transferDate) {
-      onShowToast("ရက်စွဲ ရွေးချယ်ပေးပါ။", "error");
+      onShowToast(t.records.fillRequired, "error");
       return;
     }
 
@@ -80,10 +79,10 @@ export default function TransferModal({
         amount: parsedAmount,
         date: transferDate,
       });
-      onShowToast("ငွေလွှဲပြောင်းမှု အောင်မြင်ပါသည်ခင်ဗျာ။", "success");
+      onShowToast(t.wallets.transferSuccess, "success");
       onClose();
     } catch {
-      onShowToast("ငွေလွှဲမှု မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။", "error");
+      onShowToast(t.records.actionError, "error");
     } finally {
       setIsTransferring(false);
     }
@@ -102,7 +101,7 @@ export default function TransferModal({
               <ArrowRightLeft className="w-4 h-4" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-              ငွေလွှဲမည်
+              {t.wallets.transferTitle}
             </h3>
           </div>
           <button
@@ -119,7 +118,7 @@ export default function TransferModal({
           {/* from wallet */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              လွှဲမည့် အကောင့် *
+              {t.wallets.fromWallet} *
             </label>
             <select
               id="select-transfer-from"
@@ -145,7 +144,7 @@ export default function TransferModal({
           {/* to wallet */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              လက်ခံမည့် အကောင့် *
+              {t.wallets.toWallet} *
             </label>
             <select
               id="select-transfer-to"
@@ -166,7 +165,7 @@ export default function TransferModal({
           {/* amount */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              ပမာဏ ({currencySymbol.trim()}) *
+              {t.wallets.transferAmount} ({currencySymbol.trim()}) *
             </label>
             <input
               id="input-transfer-amount"
@@ -184,7 +183,7 @@ export default function TransferModal({
           {/* date */}
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              ရက်စွဲ *
+              {t.wallets.transferDate} *
             </label>
             <input
               id="input-transfer-date"
@@ -203,7 +202,7 @@ export default function TransferModal({
               onClick={onClose}
               className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
-              မလုပ်တော့ပါ
+              {t.common.cancel}
             </button>
             <button
               id="btn-submit-transfer"
@@ -212,7 +211,7 @@ export default function TransferModal({
               className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
             >
               <ArrowRightLeft className="w-4 h-4" />
-              {isTransferring ? "လွှဲပြောင်းနေသည်..." : "ငွေလွှဲမည်"}
+              {isTransferring ? t.common.saving : t.wallets.transferSubmit}
             </button>
           </div>
         </form>

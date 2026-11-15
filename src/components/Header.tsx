@@ -1,6 +1,9 @@
-import { Menu, WifiOff, RefreshCw, Sun, Moon } from 'lucide-react';
+import { Menu, WifiOff, RefreshCw, Sun, Moon, Languages } from 'lucide-react';
 import { UserProfile } from '../types';
 import type { ResolvedTheme } from '../hooks/useTheme';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
+import { CURRENCY_LIST, type CurrencyCode } from '../utils/currency';
 
 interface HeaderProps {
   currentTab: string;
@@ -27,24 +30,27 @@ export default function Header({
   resolvedTheme = 'light',
   onToggleTheme,
 }: HeaderProps) {
+  const { language, toggleLanguage, t } = useLanguage();
+  const { displayCurrency, setDisplayCurrency } = useCurrency();
+
   const getPageTitle = () => {
     switch (currentTab) {
       case 'dashboard':
-        return 'ပင်မစာမျက်နှာ';
+        return t.nav.dashboard;
       case 'incomes':
-        return 'ဝင်ငွေ';
+        return t.nav.incomes;
       case 'expenses':
-        return 'ထွက်ငွေ';
+        return t.nav.expenses;
       case 'loans':
-        return 'ချေးငွေနှင့် အကြွေးများ';
+        return t.nav.loans;
       case 'wallets':
-        return 'ပိုက်ဆံအိတ်များ';
+        return t.nav.wallets;
       case 'categories':
-        return 'အမျိုးအစားများ';
+        return t.nav.categories;
       case 'transactions':
-        return 'မှတ်တမ်း';
+        return t.nav.transactions;
       case 'profile':
-        return 'ပရိုဖိုင်';
+        return t.nav.profile;
       default:
         return 'SmartWallet';
     }
@@ -78,7 +84,7 @@ export default function Header({
             className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 rounded-lg px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300"
           >
             <WifiOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-            <span>Offline</span>
+            <span>{t.header.offline}</span>
           </div>
         )}
 
@@ -90,16 +96,43 @@ export default function Header({
             className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-2.5 py-1 text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-            <span>Update ရပြီ</span>
+            <span>{t.header.updateAvailable}</span>
           </button>
         )}
+
+        <select
+          id="select-header-currency"
+          value={displayCurrency}
+          onChange={(e) => setDisplayCurrency(e.target.value as CurrencyCode)}
+          title={t.profile.displayCurrency}
+          aria-label={t.profile.displayCurrency}
+          className="h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer focus:outline-none focus:border-blue-500"
+        >
+          {CURRENCY_LIST.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.code} ({c.shortLabel})
+            </option>
+          ))}
+        </select>
+
+        <button
+          id="btn-header-lang-toggle"
+          type="button"
+          onClick={toggleLanguage}
+          title={t.header.switchLanguage}
+          aria-label={t.header.switchLanguage}
+          className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+        >
+          <Languages className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+          <span>{language === 'mm' ? 'MM' : 'EN'}</span>
+        </button>
 
         {onToggleTheme && (
           <button
             id="btn-header-theme-toggle"
             type="button"
             onClick={onToggleTheme}
-            title={resolvedTheme === 'dark' ? 'အလင်းပုံစံ (Light Mode) သို့ပြောင်းမည်' : 'အမှောင်ပုံစံ (Dark Mode) သို့ပြောင်းမည်'}
+            title={resolvedTheme === 'dark' ? t.header.switchToLight : t.header.switchToDark}
             aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
           >

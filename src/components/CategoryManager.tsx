@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, Edit3, Check, X } from 'lucide-react';
 import { Category, CategoryType } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface CategoryManagerProps {
   categories: Category[];
@@ -17,6 +18,7 @@ export default function CategoryManager({
   onDeleteCategory,
   onShowToast,
 }: CategoryManagerProps) {
+  const { language, t } = useLanguage();
   // tab state
   const [activeType, setActiveType] = useState<CategoryType>('income');
   
@@ -35,14 +37,10 @@ export default function CategoryManager({
   // filtered categories
   const filteredCategories = categories.filter((cat) => cat.type === activeType);
 
-  const getTypeName = (type: CategoryType) => {
-    return type === 'income' ? 'ဝင်ငွေ' : 'ထွက်ငွေ';
-  };
-
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatName.trim()) {
-      onShowToast('ခေါင်းစဉ်အုပ်စု အမည် ထည့်သွင်းပေးပါ။', 'error');
+      onShowToast(t.records.fillRequired, 'error');
       return;
     }
 
@@ -51,17 +49,17 @@ export default function CategoryManager({
       (cat) => cat.type === activeType && cat.name.toLowerCase() === newCatName.trim().toLowerCase()
     );
     if (duplicate) {
-      onShowToast(`"${newCatName.trim()}" အမည်ဖြင့် ${getTypeName(activeType)} ခေါင်းစဉ်အုပ်စု ရှိပြီးသားဖြစ်ပါသည်။`, 'error');
+      onShowToast(t.categories.duplicateError, 'error');
       return;
     }
 
     setIsAdding(true);
     try {
       await onAddCategory(newCatName.trim(), activeType);
-      onShowToast(`"${newCatName.trim()}" ခေါင်းစဉ်အုပ်စု ထည့်သွင်းပြီးပါပြီ။`, 'success');
+      onShowToast(t.categories.addSuccess, 'success');
       setNewCatName('');
     } catch {
-      onShowToast('ခေါင်းစဉ်အုပ်စု ထည့်သွင်းခြင်း မအောင်မြင်ပါ။', 'error');
+      onShowToast(t.records.actionError, 'error');
     } finally {
       setIsAdding(false);
     }
@@ -74,7 +72,7 @@ export default function CategoryManager({
 
   const handleSaveRename = async (id: string) => {
     if (!editingName.trim()) {
-      onShowToast('ခေါင်းစဉ်အုပ်စု အမည် ထည့်သွင်းပေးပါ။', 'error');
+      onShowToast(t.records.fillRequired, 'error');
       return;
     }
 
@@ -83,17 +81,17 @@ export default function CategoryManager({
       (cat) => cat.id !== id && cat.type === activeType && cat.name.toLowerCase() === editingName.trim().toLowerCase()
     );
     if (duplicate) {
-      onShowToast(`"${editingName.trim()}" အမည်ဖြင့် ${getTypeName(activeType)} ခေါင်းစဉ်အုပ်စု ရှိပြီးသားဖြစ်ပါသည်။`, 'error');
+      onShowToast(t.categories.duplicateError, 'error');
       return;
     }
 
     setIsSavingEdit(true);
     try {
       await onRenameCategory(id, editingName.trim());
-      onShowToast('ခေါင်းစဉ်အုပ်စု အမည် ပြင်ဆင်ပြီးပါပြီ။', 'success');
+      onShowToast(t.categories.renameSuccess, 'success');
       setEditingId(null);
     } catch {
-      onShowToast('အမည်ပြင်ဆင်ခြင်း မအောင်မြင်ပါ။', 'error');
+      onShowToast(t.records.actionError, 'error');
     } finally {
       setIsSavingEdit(false);
     }
@@ -102,9 +100,9 @@ export default function CategoryManager({
   const handleDeleteCategory = async (id: string) => {
     try {
       await onDeleteCategory(id);
-      onShowToast('ခေါင်းစဉ်အုပ်စု ဖျက်ပြီးပါပြီ။', 'success');
+      onShowToast(t.categories.deleteSuccess, 'success');
     } catch {
-      onShowToast('ခေါင်းစဉ်အုပ်စု ဖျက်ခြင်း မအောင်မြင်ပါ။', 'error');
+      onShowToast(t.records.actionError, 'error');
     } finally {
       setDeletingId(null);
     }
@@ -113,7 +111,7 @@ export default function CategoryManager({
   return (
     <div className="space-y-6">
       {/* main card */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden p-4 sm:p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden p-4 sm:p-5 shadow-2xs">
 
         {/* toggle tabs */}
         <div className="flex border-b border-slate-200 dark:border-slate-800 mb-6">
@@ -129,7 +127,7 @@ export default function CategoryManager({
                 : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
-            ဝင်ငွေ
+            {t.dashboard.incomeLabel}
           </button>
           <button
             id="tab-expense-categories"
@@ -143,7 +141,7 @@ export default function CategoryManager({
                 : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
-            ထွက်ငွေ
+            {t.dashboard.expenseLabel}
           </button>
         </div>
 
@@ -153,7 +151,7 @@ export default function CategoryManager({
             id="category-input-name"
             type="text"
             required
-            placeholder="ခေါင်းစဉ်အမည်..."
+            placeholder={t.categories.newCategoryPlaceholder}
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
             className="flex-1 px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-800 transition-colors min-h-[42px] sm:min-h-0"
@@ -164,19 +162,19 @@ export default function CategoryManager({
             disabled={isAdding}
             className="rounded-lg bg-[#2563EB] px-4 py-2.5 sm:py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors focus:outline-none flex-shrink-0 cursor-pointer min-h-[42px] sm:min-h-0 flex items-center justify-center"
           >
-            {isAdding ? 'ထည့်နေသည်...' : '+ ထည့်မည်'}
+            {isAdding ? t.common.saving : `+ ${t.common.add}`}
           </button>
         </form>
 
         {/* Categories List */}
         <div className="space-y-2">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-            ခေါင်းစဉ်များ
+            {t.nav.categories}
           </h4>
           
           {filteredCategories.length === 0 ? (
             <div className="text-center py-8 text-slate-400 text-sm">
-              ခေါင်းစဉ် မရှိသေးပါ။
+              {t.categories.noCategories}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
@@ -219,7 +217,7 @@ export default function CategoryManager({
                         <button
                           id={`btn-start-rename-${cat.id}`}
                           onClick={() => handleStartEdit(cat)}
-                          title="ပြင်ဆင်မည်"
+                          title={t.common.edit}
                           className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none cursor-pointer"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -227,7 +225,7 @@ export default function CategoryManager({
                         <button
                           id={`btn-trigger-delete-${cat.id}`}
                           onClick={() => setDeletingId(cat.id)}
-                          title="ဖျက်မည်"
+                          title={t.common.delete}
                           className="p-2 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors focus:outline-none cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -252,9 +250,9 @@ export default function CategoryManager({
             </div>
             
             <div>
-              <h3 className="text-base font-semibold text-[#111827] dark:text-slate-100">ခေါင်းစဉ် ဖျက်မည်လား?</h3>
+              <h3 className="text-base font-semibold text-[#111827] dark:text-slate-100">{t.categories.deleteConfirm}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
-                ဤခေါင်းစဉ်ကို ဖျက်ပစ်ပါမည်။
+                {language === 'mm' ? 'ဤခေါင်းစဉ်ကို ဖျက်ပစ်ပါမည်။' : 'This category will be permanently deleted.'}
               </p>
             </div>
 
@@ -264,14 +262,14 @@ export default function CategoryManager({
                 onClick={() => setDeletingId(null)}
                 className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                မလုပ်တော့ပါ
+                {t.common.cancel}
               </button>
               <button
                 id="btn-delete-category-confirm"
                 onClick={() => handleDeleteCategory(deletingId)}
                 className="flex-1 py-2 rounded-lg bg-[#DC2626] text-sm font-medium text-white hover:bg-[#B91C1C] transition-colors cursor-pointer"
               >
-                ဖျက်မည်
+                {t.common.delete}
               </button>
             </div>
           </div>

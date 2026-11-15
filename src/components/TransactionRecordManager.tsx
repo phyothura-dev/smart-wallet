@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { Category, UserProfile, Wallet, getWalletLabel } from '../types';
 import { getLocalDateString, getCurrentMonthRange } from '../utils/finance';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 import Pagination from './Pagination';
 
 export type TransactionRecordType = 'income' | 'expense';
@@ -55,40 +57,34 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
   onEditItem,
   onDeleteItem,
   onShowToast,
-  currencySymbol = 'Ks ',
+  currencySymbol: _currencySymbolProp,
 }: TransactionRecordManagerProps<T>) {
+  const { language, t } = useLanguage();
+  const { currencySymbol, baseCurrencySymbol, convertFromBase } = useCurrency();
   const isIncome = type === 'income';
   const idPrefix = isIncome ? 'income' : 'expense';
 
   // config texts and colors
   const config = {
-    title: isIncome ? 'ဝင်ငွေ' : 'ထွက်ငွေ',
+    title: isIncome ? t.nav.incomes : t.nav.expenses,
     desc: '',
-    addBtn: '+ အသစ်ထည့်မည်',
-    emptyTitle: isIncome ? 'ဝင်ငွေမှတ်တမ်း မရှိပါ' : 'ထွက်ငွေမှတ်တမ်း မရှိပါ',
-    modalTitleAdd: isIncome ? 'ဝင်ငွေ အသစ်ထည့်မည်' : 'ထွက်ငွေ အသစ်ထည့်မည်',
-    modalTitleEdit: isIncome ? 'ဝင်ငွေ ပြင်ဆင်မည်' : 'ထွက်ငွေ ပြင်ဆင်မည်',
-    deleteModalTitle: isIncome
-      ? 'ဝင်ငွေ ဖျက်မည်လား?'
-      : 'ထွက်ငွေ ဖျက်မည်လား?',
-    deleteModalDesc: 'ဤမှတ်တမ်းကို ဖျက်ပစ်ပါမည်။',
+    addBtn: `+ ${t.common.add}`,
+    emptyTitle: isIncome ? t.records.noIncomes : t.records.noExpenses,
+    modalTitleAdd: isIncome ? t.records.addIncome : t.records.addExpense,
+    modalTitleEdit: isIncome ? t.records.editIncome : t.records.editExpense,
+    deleteModalTitle: t.records.deleteConfirm,
+    deleteModalDesc: language === 'mm' ? 'ဤမှတ်တမ်းကို ဖျက်ပစ်ပါမည်။' : 'This record will be permanently deleted.',
     totalLabel: (count: number) =>
-      isIncome ? `စုစုပေါင်း ဝင်ငွေ (${count} ခု)` : `စုစုပေါင်း ထွက်ငွေ (${count} ခု)`,
-    toastSuccessAdd: isIncome
-      ? 'ဝင်ငွေမှတ်တမ်းအသစ် အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ။'
-      : 'အသုံးစရိတ်မှတ်တမ်းအသစ် အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ။',
-    toastSuccessEdit: isIncome
-      ? 'ဝင်ငွေမှတ်တမ်းကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ။'
-      : 'အသုံးစရိတ်မှတ်တမ်းကို အောင်မြင်စွာ ပြင်ဆင်ပြီးပါပြီ။',
-    toastSuccessDelete: isIncome
-      ? 'ဝင်ငွေမှတ်တမ်းကို ဖျက်ပစ်ပြီးပါပြီ။'
-      : 'အသုံးစရိတ်မှတ်တမ်းကို ဖျက်ပစ်ပြီးပါပြီ။',
+      `${t.records.totalFiltered} ${isIncome ? t.nav.incomes : t.nav.expenses} (${count} ${t.common.recordsCount})`,
+    toastSuccessAdd: t.records.addSuccess,
+    toastSuccessEdit: t.records.editSuccess,
+    toastSuccessDelete: t.records.deleteSuccess,
     sign: isIncome ? '+' : '-',
     textColor: isIncome ? 'text-[#059669]' : 'text-[#DC2626]',
     badgeClass: isIncome
       ? 'bg-emerald-50 dark:bg-emerald-950/60 text-[#059669] dark:text-emerald-400'
       : 'bg-rose-50 dark:bg-rose-950/60 text-[#DC2626] dark:text-rose-400',
-    placeholderTitle: isIncome ? 'ဥပမာ- လစဉ်လစာငွေ' : 'ဥပမာ- စားသောက်စရိတ်',
+    placeholderTitle: isIncome ? t.records.titlePlaceholderIncome : t.records.titlePlaceholderExpense,
   };
 
   // default date range to current month
@@ -257,20 +253,20 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      onShowToast('ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ပြည့်စုံစွာ ဖြည့်သွင်းပေးပါ။', 'error');
+      onShowToast(t.records.fillRequired, 'error');
       return;
     }
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      onShowToast('ငွေပမာဏသည် သုညထက် ကြီးရပါမည်။', 'error');
+      onShowToast(t.records.invalidAmount, 'error');
       return;
     }
     if (!category) {
-      onShowToast('ကျေးဇူးပြု၍ အမျိုးအစား ရွေးချယ်ပေးပါ။', 'error');
+      onShowToast(t.records.selectCategory, 'error');
       return;
     }
     if (!date) {
-      onShowToast('ကျေးဇူးပြု၍ အချက်အလက်အားလုံး ပြည့်စုံစွာ ဖြည့်သွင်းပေးပါ။', 'error');
+      onShowToast(t.records.fillRequired, 'error');
       return;
     }
 
@@ -293,7 +289,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
       }
       setIsOpenForm(false);
     } catch {
-      onShowToast('အမှားဖြစ်ပေါ်ခဲ့ပါသည်။ ထပ်မံကြိုးစားပါ။', 'error');
+      onShowToast(t.records.actionError, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -305,7 +301,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
       await onDeleteItem(deletingId);
       onShowToast(config.toastSuccessDelete, 'success');
     } catch {
-      onShowToast('ဖျက်ပစ်ရာတွင် အမှားဖြစ်ပေါ်ခဲ့ပါသည်။', 'error');
+      onShowToast(t.records.actionError, 'error');
     } finally {
       setDeletingId(null);
     }
@@ -314,7 +310,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
   return (
     <div className="space-y-6">
       {/* table container */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xs">
         {/* header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 pt-4 sm:pt-5 pb-3">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{config.title}</h3>
@@ -337,7 +333,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                 <input
                   id={`${idPrefix}-search-input`}
                   type="text"
-                  placeholder="ရှာဖွေပါ..."
+                  placeholder={t.common.search}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-medium transition-all"
@@ -352,7 +348,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   onChange={(e) => setCategoryFilter(e.target.value)}
                   className="w-full appearance-none pl-3 pr-8 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
                 >
-                  <option value="all">ခေါင်းစဉ်: အားလုံး</option>
+                  <option value="all">{t.records.allCategories}</option>
                   {relevantCategories.map((c) => (
                     <option key={c.id} value={c.name}>
                       {c.name}
@@ -371,7 +367,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     onChange={(e) => setWalletFilter(e.target.value)}
                     className="w-full appearance-none pl-3 pr-8 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer truncate"
                   >
-                    <option value="all">ပိုက်ဆံအိတ်: အားလုံး</option>
+                    <option value="all">{t.records.allWallets}</option>
                     {wallets.map((w) => (
                       <option key={w.id} value={w.id}>
                         {getWalletLabel(w.type, w.name)}
@@ -430,13 +426,13 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 mb-3">
               <Clock className="w-6 h-6" />
             </div>
-            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">မှတ်တမ်း မတွေ့ပါ</h4>
+            <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{t.records.noFilteredResults}</h4>
             <button
               id={`btn-reset-filters-${idPrefix}`}
               onClick={handleClearFilters}
               className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
-              စစ်ထုတ်မှု ရှင်းလင်းမည်
+              {t.common.clearFilters}
             </button>
           </div>
         ) : (
@@ -451,7 +447,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                       className="py-3 px-6 cursor-pointer select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span>ခေါင်းစဉ်</span>
+                        <span>{t.common.title}</span>
                         {renderSortIcon('title')}
                       </div>
                     </th>
@@ -460,7 +456,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                       className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span>အမျိုးအစား</span>
+                        <span>{t.common.category}</span>
                         {renderSortIcon('category')}
                       </div>
                     </th>
@@ -469,7 +465,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                       className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors group"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span>ရက်စွဲ</span>
+                        <span>{t.common.date}</span>
                         {renderSortIcon('date')}
                       </div>
                     </th>
@@ -478,11 +474,11 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                       className="py-3 px-4 text-right cursor-pointer select-none hover:bg-slate-100/80 dark:hover:bg-slate-800 transition-colors group"
                     >
                       <div className="flex items-center justify-end gap-1.5">
-                        <span>ပမာဏ</span>
+                        <span>{t.common.amount}</span>
                         {renderSortIcon('amount')}
                       </div>
                     </th>
-                    <th className="py-3 px-6 text-center">လုပ်ဆောင်ချက်</th>
+                    <th className="py-3 px-6 text-center">{t.common.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -505,14 +501,14 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                       </td>
                       <td className="py-4 px-4 text-slate-500 dark:text-slate-400 text-xs">{item.date}</td>
                       <td className={`py-4 px-4 font-semibold ${config.textColor} text-right`}>
-                        {config.sign}{currencySymbol}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {config.sign}{currencySymbol}{convertFromBase(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             id={`btn-edit-${idPrefix}-${item.id}`}
                             onClick={() => openEditModal(item)}
-                            title="ပြင်ဆင်မည်"
+                            title={t.common.edit}
                             className="rounded-lg p-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100 transition-colors focus:outline-none cursor-pointer"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -520,7 +516,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                           <button
                             id={`btn-delete-${idPrefix}-${item.id}`}
                             onClick={() => setDeletingId(item.id)}
-                            title="ဖျက်မည်"
+                            title={t.common.delete}
                             className="rounded-lg p-1.5 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 hover:text-rose-600 dark:hover:text-rose-400 transition-colors focus:outline-none cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -536,7 +532,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                       {config.totalLabel(filteredItems.length)}
                     </td>
                     <td className={`py-3.5 px-4 text-right ${config.textColor} font-bold text-base`}>
-                      {config.sign}{currencySymbol}{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {config.sign}{currencySymbol}{convertFromBase(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="py-3.5 px-6"></td>
                   </tr>
@@ -569,7 +565,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     </div>
                     <div className="text-right flex-shrink-0">
                       <span className={`font-bold ${config.textColor} text-base`}>
-                        {config.sign}{currencySymbol}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {config.sign}{currencySymbol}{convertFromBase(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
@@ -580,14 +576,14 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                       onClick={() => openEditModal(item)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[36px]"
                     >
-                      <Edit3 className="w-3.5 h-3.5" /> ပြင်ဆင်မည်
+                      <Edit3 className="w-3.5 h-3.5" /> {t.common.edit}
                     </button>
                     <button
                       id={`btn-delete-${idPrefix}-mobile-${item.id}`}
                       onClick={() => setDeletingId(item.id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-100 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/50 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 transition-colors cursor-pointer min-h-[36px]"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> ဖျက်မည်
+                      <Trash2 className="w-3.5 h-3.5" /> {t.common.delete}
                     </button>
                   </div>
                 </div>
@@ -597,7 +593,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
               <div className="p-4 bg-slate-50 dark:bg-slate-800/70 border-t-2 border-slate-200 dark:border-slate-700 flex items-center justify-between font-semibold text-sm">
                 <span className="text-slate-700 dark:text-slate-200">{config.totalLabel(filteredItems.length)}</span>
                 <span className={`${config.textColor} text-base font-bold`}>
-                  {config.sign}{currencySymbol}{totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {config.sign}{currencySymbol}{convertFromBase(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
@@ -636,7 +632,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                  ခေါင်းစဉ် *
+                  {t.common.title} *
                 </label>
                 <input
                   id={`${idPrefix}-input-title`}
@@ -652,7 +648,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                    ပမာဏ ({currencySymbol.trim()}) *
+                    {t.common.amount} ({baseCurrencySymbol.trim()}) *
                   </label>
                   <input
                     id={`${idPrefix}-input-amount`}
@@ -668,7 +664,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
 
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                    အမျိုးအစား *
+                    {t.common.category} *
                   </label>
                   <select
                     id={`${idPrefix}-input-category`}
@@ -677,7 +673,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                     onChange={(e) => setCategory(e.target.value)}
                     className="block w-full px-3.5 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 text-base sm:text-sm focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
                   >
-                    <option value="" disabled>အမျိုးအစား ရွေးချယ်ပါ</option>
+                    <option value="" disabled>{t.records.selectCategory}</option>
                     {relevantCategories.map((cat) => (
                       <option key={cat.id} value={cat.name}>
                         {cat.name}
@@ -690,7 +686,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
               {wallets.length > 0 && (
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                    ပိုက်ဆံအိတ် *
+                    {t.common.wallet} *
                   </label>
                   <select
                     id={`${idPrefix}-input-wallet`}
@@ -709,7 +705,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
 
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                  ရက်စွဲ *
+                  {t.common.date} *
                 </label>
                 <input
                   id={`${idPrefix}-input-date`}
@@ -728,7 +724,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   onClick={() => setIsOpenForm(false)}
                   className="px-4 py-2.5 sm:py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer min-h-[44px] sm:min-h-0"
                 >
-                  မလုပ်တော့ပါ
+                  {t.common.cancel}
                 </button>
                 <button
                   id={`btn-save-${idPrefix}-form`}
@@ -736,7 +732,7 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                   disabled={isSubmitting}
                   className="px-5 py-2.5 sm:py-2 rounded-lg bg-[#2563EB] text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors flex items-center justify-center gap-1 cursor-pointer min-h-[44px] sm:min-h-0"
                 >
-                  {isSubmitting ? 'သိမ်းဆည်းနေသည်...' : 'သိမ်းဆည်းမည်'}
+                  {isSubmitting ? t.common.saving : t.common.save}
                 </button>
               </div>
             </form>
@@ -766,14 +762,14 @@ export default function TransactionRecordManager<T extends BaseTransactionRecord
                 onClick={() => setDeletingId(null)}
                 className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                မလုပ်တော့ပါ
+                {t.common.cancel}
               </button>
               <button
                 id={`btn-delete-${idPrefix}-confirm`}
                 onClick={handleDeleteConfirm}
                 className="flex-1 py-2 rounded-lg bg-[#DC2626] text-sm font-medium text-white hover:bg-[#B91C1C] transition-colors cursor-pointer"
               >
-                ဖျက်မည်
+                {t.common.delete}
               </button>
             </div>
           </div>

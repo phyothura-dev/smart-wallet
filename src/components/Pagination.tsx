@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export interface PaginationProps {
   currentPage: number;
@@ -16,6 +17,7 @@ export default function Pagination({
   itemsPerPage,
   onPageChange,
 }: PaginationProps) {
+  const { t } = useLanguage();
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
   // pagination page numbers
@@ -56,7 +58,7 @@ export default function Pagination({
           type="button"
           onClick={() => onPageChange(1)}
           disabled={currentPage <= 1}
-          title="ပထမဆုံး စာမျက်နှာ"
+          title={t.pagination.firstPage}
           className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronsLeft className="w-4 h-4" />
@@ -67,7 +69,7 @@ export default function Pagination({
           type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          title="ရှေ့စာမျက်နှာ"
+          title={t.pagination.prevPage}
           className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -107,7 +109,7 @@ export default function Pagination({
           type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          title="နောက်စာမျက်နှာ"
+          title={t.pagination.nextPage}
           className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronRight className="w-4 h-4" />
@@ -118,7 +120,7 @@ export default function Pagination({
           type="button"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage >= totalPages}
-          title="နောက်ဆုံး စာမျက်နှာ"
+          title={t.pagination.lastPage}
           className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <ChevronsRight className="w-4 h-4" />
