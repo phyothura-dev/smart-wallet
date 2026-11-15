@@ -35,6 +35,9 @@ export interface Translations {
     incomes: string;
     expenses: string;
     loans: string;
+    budgets: string;
+    recurring: string;
+    goals: string;
     wallets: string;
     categories: string;
     transactions: string;
@@ -42,6 +45,10 @@ export interface Translations {
     installApp: string;
     signOut: string;
     financeHub: string;
+    groupCashflow: string;
+    groupPlanning: string;
+    groupAccounts: string;
+    more: string;
   };
   header: {
     offline: string;
@@ -294,6 +301,78 @@ export interface Translations {
     repaymentSuccess: string;
     repaymentExceedsError: string;
   };
+  budgets: {
+    title: string;
+    addBudget: string;
+    editBudget: string;
+    totalBudget: string;
+    totalSpent: string;
+    remaining: string;
+    overBudget: string;
+    monthlyLimit: string;
+    spentThisMonth: string;
+    nearLimit: string;
+    onTrack: string;
+    noBudgets: string;
+    noBudgetsDesc: string;
+    deleteConfirm: string;
+    addSuccess: string;
+    editSuccess: string;
+    deleteSuccess: string;
+    duplicateCategory: string;
+  };
+  recurring: {
+    title: string;
+    addRecurring: string;
+    editRecurring: string;
+    monthlyBills: string;
+    monthlyIncome: string;
+    activeCount: string;
+    frequency: string;
+    weekly: string;
+    monthly: string;
+    yearly: string;
+    nextDueDate: string;
+    recordNow: string;
+    pause: string;
+    resume: string;
+    paused: string;
+    overdue: string;
+    dueToday: string;
+    dueSoon: string;
+    noRecurring: string;
+    noRecurringDesc: string;
+    deleteConfirm: string;
+    addSuccess: string;
+    editSuccess: string;
+    deleteSuccess: string;
+    recordedSuccess: string;
+  };
+  goals: {
+    title: string;
+    addGoal: string;
+    editGoal: string;
+    addContribution: string;
+    totalSaved: string;
+    totalTarget: string;
+    overallProgress: string;
+    goalTitle: string;
+    goalPlaceholder: string;
+    targetAmount: string;
+    currentAmount: string;
+    targetDate: string;
+    contributionAmount: string;
+    completed: string;
+    remainingToSave: string;
+    daysLeft: string;
+    noGoals: string;
+    noGoalsDesc: string;
+    deleteConfirm: string;
+    addSuccess: string;
+    editSuccess: string;
+    deleteSuccess: string;
+    contributionSuccess: string;
+  };
   app: {
     loadingPage: string;
     loadingData: string;
@@ -342,6 +421,9 @@ export const translations: Record<Language, Translations> = {
       incomes: 'ဝင်ငွေ',
       expenses: 'ထွက်ငွေ',
       loans: 'ချေးငွေနှင့် အကြွေးများ',
+      budgets: 'လစဉ်ဘတ်ဂျက်',
+      recurring: 'ပုံမှန်ငွေစာရင်း',
+      goals: 'ငွေစုရည်မှန်းချက်',
       wallets: 'ပိုက်ဆံအိတ်များ',
       categories: 'အမျိုးအစားများ',
       transactions: 'မှတ်တမ်း',
@@ -349,6 +431,10 @@ export const translations: Record<Language, Translations> = {
       installApp: 'App သွင်းမည်',
       signOut: 'အကောင့်မှ ထွက်မည်',
       financeHub: 'Finance Hub',
+      groupCashflow: 'ငွေဝင်-ငွေထွက်',
+      groupPlanning: 'ငွေကြေးစီမံမှု',
+      groupAccounts: 'အကောင့်နှင့် စနစ်',
+      more: 'အခြား',
     },
     header: {
       offline: 'Offline',
@@ -601,6 +687,78 @@ export const translations: Record<Language, Translations> = {
       repaymentSuccess: 'ပြန်ဆပ်ငွေ မှတ်တမ်းတင်ပြီးပါပြီ။',
       repaymentExceedsError: 'ဆပ်သည့်ပမာဏသည် ကျန်ငွေထက် များနေပါသည်။',
     },
+    budgets: {
+      title: 'လစဉ် အသုံးစရိတ် ဘတ်ဂျက်',
+      addBudget: 'ဘတ်ဂျက် သတ်မှတ်မည်',
+      editBudget: 'ဘတ်ဂျက် ပြင်ဆင်မည်',
+      totalBudget: 'စုစုပေါင်း ဘတ်ဂျက်',
+      totalSpent: 'ယခုလ သုံးစွဲပြီး',
+      remaining: 'လက်ကျန်ဘတ်ဂျက်',
+      overBudget: 'ဘတ်ဂျက်ကျော်လွန်',
+      monthlyLimit: 'လစဉ် သတ်မှတ်ပမာဏ',
+      spentThisMonth: 'ယခုလ သုံးငွေ',
+      nearLimit: 'သတိထားရန်',
+      onTrack: 'ပုံမှန်အတိုင်း',
+      noBudgets: 'ဘတ်ဂျက် မသတ်မှတ်ရသေးပါ',
+      noBudgetsDesc: 'အမျိုးအစားတစ်ခုချင်းစီအတွက် လစဉ်သုံးစွဲမှု ကန့်သတ်ချက် သတ်မှတ်ပြီး ငွေကြေးစီမံပါ။',
+      deleteConfirm: 'ဤဘတ်ဂျက်ကို ဖျက်ရန် သေချာပါသလား?',
+      addSuccess: 'ဘတ်ဂျက် အသစ်သတ်မှတ်ပြီးပါပြီ။',
+      editSuccess: 'ဘတ်ဂျက် ပြင်ဆင်ပြီးပါပြီ။',
+      deleteSuccess: 'ဘတ်ဂျက် ဖျက်ပြီးပါပြီ။',
+      duplicateCategory: 'ဤအမျိုးအစားအတွက် ဘတ်ဂျက် သတ်မှတ်ပြီးသား ဖြစ်ပါသည်။',
+    },
+    recurring: {
+      title: 'ပုံမှန် ဝင်ငွေ/ထွက်ငွေ နှင့် ဘေလ်များ',
+      addRecurring: 'ပုံမှန်စာရင်း ထည့်မည်',
+      editRecurring: 'ပုံမှန်စာရင်း ပြင်ဆင်မည်',
+      monthlyBills: 'လစဉ် ပုံမှန်ထွက်ငွေ',
+      monthlyIncome: 'လစဉ် ပုံမှန်ဝင်ငွေ',
+      activeCount: 'လုပ်ဆောင်နေဆဲ',
+      frequency: 'အကြိမ်အရေအတွက်',
+      weekly: 'အပတ်စဉ်',
+      monthly: 'လစဉ်',
+      yearly: 'နှစ်စဉ်',
+      nextDueDate: 'နောက်တစ်ကြိမ် ရက်စွဲ',
+      recordNow: 'မှတ်တမ်းသွင်းမည်',
+      pause: 'ခေတ္တရပ်မည်',
+      resume: 'ပြန်စမည်',
+      paused: 'ရပ်ထားသည်',
+      overdue: 'ရက်ကျော်နေသည်',
+      dueToday: 'ယနေ့ ပေးချေရမည်',
+      dueSoon: 'ရက်ပိုင်းအတွင်း',
+      noRecurring: 'ပုံမှန်ငွေစာရင်း မရှိသေးပါ',
+      noRecurringDesc: 'လစာ၊ အိမ်လခ၊ Wi-Fi ဘေလ် စသည့် ပုံမှန်ငွေစာရင်းများကို ထည့်သွင်းထားနိုင်ပါသည်။',
+      deleteConfirm: 'ဤပုံမှန်စာရင်းကို ဖျက်ရန် သေချာပါသလား?',
+      addSuccess: 'ပုံမှန်စာရင်း ထည့်သွင်းပြီးပါပြီ။',
+      editSuccess: 'ပုံမှန်စာရင်း ပြင်ဆင်ပြီးပါပြီ။',
+      deleteSuccess: 'ပုံမှန်စာရင်း ဖျက်ပြီးပါပြီ။',
+      recordedSuccess: 'မှတ်တမ်းသွင်းပြီး နောက်တစ်ကြိမ်ရက်စွဲကို အလိုအလျောက် တိုးမြှင့်ပြီးပါပြီ။',
+    },
+    goals: {
+      title: 'ငွေစုရည်မှန်းချက်များ',
+      addGoal: 'ရည်မှန်းချက် အသစ်ထည့်မည်',
+      editGoal: 'ရည်မှန်းချက် ပြင်ဆင်မည်',
+      addContribution: 'ငွေထည့်မည်',
+      totalSaved: 'စုဆောင်းပြီးငွေ',
+      totalTarget: 'စုစုပေါင်း ရည်မှန်းချက်',
+      overallProgress: 'စုစုပေါင်း ပြည့်မီမှု',
+      goalTitle: 'ရည်မှန်းချက် အမည်',
+      goalPlaceholder: 'ဥပမာ - အရေးပေါ်ရန်ပုံငွေ၊ ခရီးသွားရန်',
+      targetAmount: 'ရည်မှန်းပမာဏ',
+      currentAmount: 'လက်ရှိစုပြီးငွေ',
+      targetDate: 'ရည်မှန်းရက်စွဲ',
+      contributionAmount: 'ထပ်ထည့်မည့် ပမာဏ',
+      completed: 'ပြည့်မီပြီး',
+      remainingToSave: 'ထပ်စုရန်ကျန်',
+      daysLeft: 'ရက်ကျန်',
+      noGoals: 'ငွေစုရည်မှန်းချက် မရှိသေးပါ',
+      noGoalsDesc: 'သင့်အနာဂတ် ရည်မှန်းချက်များအတွက် ငွေစုပန်းတိုင်များ သတ်မှတ်ပါ။',
+      deleteConfirm: 'ဤငွေစုရည်မှန်းချက်ကို ဖျက်ရန် သေချာပါသလား?',
+      addSuccess: 'ငွေစုရည်မှန်းချက် ထည့်သွင်းပြီးပါပြီ။',
+      editSuccess: 'ငွေစုရည်မှန်းချက် ပြင်ဆင်ပြီးပါပြီ။',
+      deleteSuccess: 'ငွေစုရည်မှန်းချက် ဖျက်ပြီးပါပြီ။',
+      contributionSuccess: 'စုဆောင်းငွေ ထည့်သွင်းပြီးပါပြီ။',
+    },
     app: {
       loadingPage: 'စာမျက်နှာ ဖွင့်နေပါသည်...',
       loadingData: 'အချက်အလက်များ ရယူနေပါသည်...',
@@ -647,6 +805,9 @@ export const translations: Record<Language, Translations> = {
       incomes: 'Income',
       expenses: 'Expenses',
       loans: 'Loans & Debts',
+      budgets: 'Budgets',
+      recurring: 'Recurring',
+      goals: 'Savings Goals',
       wallets: 'Wallets',
       categories: 'Categories',
       transactions: 'Transactions',
@@ -654,6 +815,10 @@ export const translations: Record<Language, Translations> = {
       installApp: 'Install App',
       signOut: 'Sign Out',
       financeHub: 'Finance Hub',
+      groupCashflow: 'Cashflow',
+      groupPlanning: 'Planning',
+      groupAccounts: 'Accounts & Setup',
+      more: 'More',
     },
     header: {
       offline: 'Offline',
@@ -905,6 +1070,78 @@ export const translations: Record<Language, Translations> = {
       deleteSuccess: 'Loan deleted.',
       repaymentSuccess: 'Repayment recorded successfully.',
       repaymentExceedsError: 'Repayment amount exceeds remaining balance.',
+    },
+    budgets: {
+      title: 'Monthly Budgets',
+      addBudget: 'Set Budget',
+      editBudget: 'Edit Budget',
+      totalBudget: 'Total Budget',
+      totalSpent: 'Spent This Month',
+      remaining: 'Remaining',
+      overBudget: 'Over Budget',
+      monthlyLimit: 'Monthly Limit',
+      spentThisMonth: 'Spent This Month',
+      nearLimit: 'Near Limit',
+      onTrack: 'On Track',
+      noBudgets: 'No budgets set yet',
+      noBudgetsDesc: 'Set monthly spending limits per category to stay on top of your expenses.',
+      deleteConfirm: 'Are you sure you want to delete this budget?',
+      addSuccess: 'Budget created successfully.',
+      editSuccess: 'Budget updated successfully.',
+      deleteSuccess: 'Budget deleted.',
+      duplicateCategory: 'A budget for this category already exists.',
+    },
+    recurring: {
+      title: 'Recurring Bills & Income',
+      addRecurring: 'Add Recurring',
+      editRecurring: 'Edit Recurring',
+      monthlyBills: 'Monthly Bills',
+      monthlyIncome: 'Monthly Income',
+      activeCount: 'Active Schedules',
+      frequency: 'Frequency',
+      weekly: 'Weekly',
+      monthly: 'Monthly',
+      yearly: 'Yearly',
+      nextDueDate: 'Next Due Date',
+      recordNow: 'Record Now',
+      pause: 'Pause',
+      resume: 'Resume',
+      paused: 'Paused',
+      overdue: 'Overdue',
+      dueToday: 'Due Today',
+      dueSoon: 'Due Soon',
+      noRecurring: 'No recurring transactions yet',
+      noRecurringDesc: 'Track rent, internet bills, subscriptions, or monthly salary in one place.',
+      deleteConfirm: 'Are you sure you want to delete this recurring item?',
+      addSuccess: 'Recurring item added successfully.',
+      editSuccess: 'Recurring item updated successfully.',
+      deleteSuccess: 'Recurring item deleted.',
+      recordedSuccess: 'Recorded transaction and advanced next due date.',
+    },
+    goals: {
+      title: 'Savings Goals',
+      addGoal: 'New Goal',
+      editGoal: 'Edit Goal',
+      addContribution: 'Add Savings',
+      totalSaved: 'Total Saved',
+      totalTarget: 'Total Target',
+      overallProgress: 'Overall Progress',
+      goalTitle: 'Goal Title',
+      goalPlaceholder: 'e.g. Emergency Fund, New Laptop',
+      targetAmount: 'Target Amount',
+      currentAmount: 'Current Saved',
+      targetDate: 'Target Date',
+      contributionAmount: 'Amount to Add',
+      completed: 'Completed',
+      remainingToSave: 'Remaining',
+      daysLeft: 'days left',
+      noGoals: 'No savings goals yet',
+      noGoalsDesc: 'Create savings targets and track your progress over time.',
+      deleteConfirm: 'Are you sure you want to delete this savings goal?',
+      addSuccess: 'Savings goal created successfully.',
+      editSuccess: 'Savings goal updated successfully.',
+      deleteSuccess: 'Savings goal deleted.',
+      contributionSuccess: 'Contribution added successfully.',
     },
     app: {
       loadingPage: 'Loading page...',

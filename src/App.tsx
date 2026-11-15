@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { useUserData } from './hooks/useUserData';
@@ -7,33 +7,21 @@ import { useTheme } from './hooks/useTheme';
 import { useLanguage } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 
-// layout components
+// layout & routing components
 import Auth from './components/Auth';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import MobileBottomNav from './components/MobileBottomNav';
 import { ToastContainer, Toast } from './components/Toast';
+import AppRoutes from './routes/AppRoutes';
+import { isValidRouteId, type RouteId } from './routes/routeConfig';
 
 import { RefreshCw } from 'lucide-react';
 import { isDateInCurrentMonth } from './utils/finance';
 
-// lazy view components
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const IncomeManager = lazy(() => import('./components/IncomeManager'));
-const ExpenseManager = lazy(() => import('./components/ExpenseManager'));
-const WalletManager = lazy(() => import('./components/WalletManager'));
-const CategoryManager = lazy(() => import('./components/CategoryManager'));
-const TransactionHistory = lazy(() => import('./components/TransactionHistory'));
-const ProfileManager = lazy(() => import('./components/ProfileManager'));
-const LoanManager = lazy(() => import('./components/LoanManager'));
-
-function ViewLoadingSpinner() {
-  const { t } = useLanguage();
-  return (
-    <div className="flex flex-col items-center justify-center py-24 text-slate-500 dark:text-slate-400">
-      <RefreshCw className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 mb-2" />
-      <p className="text-xs font-semibold">{t.app.loadingPage}</p>
-    </div>
-  );
+function getInitialRoute(): RouteId {
+  const hash = window.location.hash.replace(/^#\/?/, '');
+  return isValidRouteId(hash) ? hash : 'dashboard';
 }
 
 export default function App() {
@@ -42,9 +30,27 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // navigation state
-  const [currentTab, setCurrentTab] = useState<string>('dashboard');
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  // navigation state synced with URL hash (#/dashboard, #/budgets, etc.)
+  const [currentRoute, setCurrentRoute] = useState<RouteId>(getInitialRoute);
+
+  const navigateTo = useCallback((route: RouteId) => {
+    setCurrentRoute(route);
+    if (window.location.hash !== `#/${route}`) {
+      window.location.hash = `#/${route}`;
+    }
+  }, []);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.replace(/^#\/?/, '');
+      if (isValidRouteId(hash)) {
+        setCurrentRoute(hash);
+      }
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
     try {
       return localStorage.getItem('smartwallet-sidebar-collapsed') === 'true';
@@ -107,6 +113,9 @@ export default function App() {
     incomes,
     expenses,
     loans,
+    budgets,
+    recurring,
+    savingsGoals,
     dataLoading,
     dbError,
     handleAddIncome,
@@ -129,13 +138,24 @@ export default function App() {
     handleDeleteLoan,
     handleAddLoanRepayment,
     handleDeleteLoanRepayment,
+    handleAddBudget,
+    handleEditBudget,
+    handleDeleteBudget,
+    handleAddRecurring,
+    handleEditRecurring,
+    handleDeleteRecurring,
+    handleRecordRecurringNow,
+    handleAddSavingsGoal,
+    handleEditSavingsGoal,
+    handleDeleteSavingsGoal,
+    handleAddSavingsContribution,
   } = useUserData(user);
 
   const handleSignOut = async () => {
     try {
       await signOut(auth);
       handleShowToast(t.app.signOutSuccess, 'info');
-      setCurrentTab('dashboard');
+      navigateTo('dashboard');
     } catch {
       handleShowToast(t.app.signOutError, 'error');
     }
@@ -288,14 +308,12 @@ export default function App() {
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={handleCloseToast} />
 
-      {/* Sidebar navigation */}
+      {/* Desktop Sidebar navigation */}
       <Sidebar
-        currentTab={currentTab}
-        onChangeTab={setCurrentTab}
+        currentRoute={currentRoute}
+        onNavigate={navigateTo}
         profile={profile}
         onSignOut={handleSignOut}
-        isMobileOpen={mobileSidebarOpen}
-        onCloseMobile={() => setMobileSidebarOpen(false)}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={toggleSidebarCollapsed}
         isInstallable={isInstallable}
@@ -305,9 +323,8 @@ export default function App() {
       {/* Main content frame */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0 relative">
         <Header
-          currentTab={currentTab}
+          currentRoute={currentRoute}
           profile={profile}
-          onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
           totalIncomeForMonth={currentMonthTotals.income}
           totalExpenseForMonth={currentMonthTotals.expense}
           isInstallable={isInstallable}
@@ -319,114 +336,70 @@ export default function App() {
           onToggleTheme={toggleTheme}
         />
 
-        {/* Scrollable layout sandbox */}
-        <main className="flex-1 overflow-y-auto px-4 py-4 md:px-8 md:py-8 scrollbar-thin">
+        {/* Scrollable layout sandbox (pb-24 on mobile for Bottom Navigation Bar) */}
+        <main className="flex-1 overflow-y-auto px-4 pt-4 pb-24 md:px-8 md:pt-8 lg:pb-8 scrollbar-thin">
           <div className="mx-auto w-full max-w-7xl">
-            <Suspense fallback={<ViewLoadingSpinner />}>
-              {currentTab === 'dashboard' && (
-                <Dashboard
-                  incomes={incomes}
-                  expenses={expenses}
-                  wallets={wallets}
-                  transfers={transfers}
-                  loans={loans}
-                  profile={profile}
-                  resolvedTheme={resolvedTheme}
-                  onChangeTab={setCurrentTab}
-                  onAddTransfer={handleAddTransfer}
-                  onShowToast={handleShowToast}
-                />
-              )}
-
-              {currentTab === 'incomes' && (
-                <IncomeManager
-                  incomes={incomes}
-                  categories={categories}
-                  wallets={wallets}
-                  profile={profile}
-                  onAddIncome={handleAddIncome}
-                  onEditIncome={handleEditIncome}
-                  onDeleteIncome={handleDeleteIncome}
-                  onShowToast={handleShowToast}
-                />
-              )}
-
-              {currentTab === 'expenses' && (
-                <ExpenseManager
-                  expenses={expenses}
-                  categories={categories}
-                  wallets={wallets}
-                  profile={profile}
-                  onAddExpense={handleAddExpense}
-                  onEditExpense={handleEditExpense}
-                  onDeleteExpense={handleDeleteExpense}
-                  onShowToast={handleShowToast}
-                />
-              )}
-
-              {currentTab === 'loans' && (
-                <LoanManager
-                  loans={loans}
-                  wallets={wallets}
-                  profile={profile}
-                  onAddLoan={handleAddLoan}
-                  onEditLoan={handleEditLoan}
-                  onDeleteLoan={handleDeleteLoan}
-                  onAddLoanRepayment={handleAddLoanRepayment}
-                  onDeleteLoanRepayment={handleDeleteLoanRepayment}
-                  onShowToast={handleShowToast}
-                />
-              )}
-
-              {currentTab === 'wallets' && (
-                <WalletManager
-                  wallets={wallets}
-                  incomes={incomes}
-                  expenses={expenses}
-                  transfers={transfers}
-                  loans={loans}
-                  onAddWallet={handleAddWallet}
-                  onEditWallet={handleEditWallet}
-                  onDeleteWallet={handleDeleteWallet}
-                  onAddTransfer={handleAddTransfer}
-                  onDeleteTransfer={handleDeleteTransfer}
-                  onShowToast={handleShowToast}
-                />
-              )}
-
-              {currentTab === 'categories' && (
-                <CategoryManager
-                  categories={categories}
-                  onAddCategory={handleAddCategory}
-                  onRenameCategory={handleRenameCategory}
-                  onDeleteCategory={handleDeleteCategory}
-                  onShowToast={handleShowToast}
-                />
-              )}
-
-              {currentTab === 'transactions' && (
-                <TransactionHistory
-                  incomes={incomes}
-                  expenses={expenses}
-                  categories={categories}
-                  wallets={wallets}
-                  profile={profile}
-                  onShowToast={handleShowToast}
-                />
-              )}
-
-              {currentTab === 'profile' && (
-                <ProfileManager
-                  profile={profile}
-                  onUpdateProfile={handleUpdateProfile}
-                  onShowToast={handleShowToast}
-                  theme={theme}
-                  onChangeTheme={setTheme}
-                />
-              )}
-            </Suspense>
+            <AppRoutes
+              currentRoute={currentRoute}
+              onNavigate={navigateTo}
+              profile={profile}
+              categories={categories}
+              wallets={wallets}
+              transfers={transfers}
+              incomes={incomes}
+              expenses={expenses}
+              loans={loans}
+              budgets={budgets}
+              recurring={recurring}
+              savingsGoals={savingsGoals}
+              theme={theme}
+              resolvedTheme={resolvedTheme}
+              onChangeTheme={setTheme}
+              onShowToast={handleShowToast}
+              onAddIncome={handleAddIncome}
+              onEditIncome={handleEditIncome}
+              onDeleteIncome={handleDeleteIncome}
+              onAddExpense={handleAddExpense}
+              onEditExpense={handleEditExpense}
+              onDeleteExpense={handleDeleteExpense}
+              onAddCategory={handleAddCategory}
+              onRenameCategory={handleRenameCategory}
+              onDeleteCategory={handleDeleteCategory}
+              onAddWallet={handleAddWallet}
+              onEditWallet={handleEditWallet}
+              onDeleteWallet={handleDeleteWallet}
+              onAddTransfer={handleAddTransfer}
+              onDeleteTransfer={handleDeleteTransfer}
+              onUpdateProfile={handleUpdateProfile}
+              onAddLoan={handleAddLoan}
+              onEditLoan={handleEditLoan}
+              onDeleteLoan={handleDeleteLoan}
+              onAddLoanRepayment={handleAddLoanRepayment}
+              onDeleteLoanRepayment={handleDeleteLoanRepayment}
+              onAddBudget={handleAddBudget}
+              onEditBudget={handleEditBudget}
+              onDeleteBudget={handleDeleteBudget}
+              onAddRecurring={handleAddRecurring}
+              onEditRecurring={handleEditRecurring}
+              onDeleteRecurring={handleDeleteRecurring}
+              onRecordRecurringNow={handleRecordRecurringNow}
+              onAddSavingsGoal={handleAddSavingsGoal}
+              onEditSavingsGoal={handleEditSavingsGoal}
+              onDeleteSavingsGoal={handleDeleteSavingsGoal}
+              onAddSavingsContribution={handleAddSavingsContribution}
+            />
           </div>
         </main>
+
+        {/* Mobile App Style Bottom Navigation Bar */}
+        <MobileBottomNav
+          currentRoute={currentRoute}
+          onNavigate={navigateTo}
+          profile={profile}
+          isInstallable={isInstallable}
+          onInstallApp={installApp}
+          onSignOut={handleSignOut}
+        />
       </div>
     </div>
     </CurrencyProvider>

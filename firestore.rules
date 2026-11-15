@@ -6,6 +6,48 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
+    function isValidBudget(data) {
+      return data.category is string
+        && data.category.size() > 0
+        && data.category.size() <= 50
+        && data.monthlyLimit is number
+        && data.monthlyLimit > 0
+        && data.createdAt is string
+        && data.createdAt.size() <= 100;
+    }
+
+    function isValidRecurring(data) {
+      return data.type in ['income', 'expense']
+        && data.title is string
+        && data.title.size() > 0
+        && data.title.size() <= 100
+        && data.amount is number
+        && data.amount > 0
+        && data.category is string
+        && data.category.size() > 0
+        && data.category.size() <= 50
+        && data.walletId is string
+        && data.walletId.size() <= 100
+        && data.frequency in ['weekly', 'monthly', 'yearly']
+        && data.nextDueDate is string
+        && data.nextDueDate.size() <= 100
+        && data.isActive is bool
+        && data.createdAt is string
+        && data.createdAt.size() <= 100;
+    }
+
+    function isValidSavingsGoal(data) {
+      return data.title is string
+        && data.title.size() > 0
+        && data.title.size() <= 100
+        && data.targetAmount is number
+        && data.targetAmount > 0
+        && data.currentAmount is number
+        && data.currentAmount >= 0
+        && data.createdAt is string
+        && data.createdAt.size() <= 100;
+    }
+
     match /users/{userId} {
       allow read: if isOwner(userId);
       allow create, update: if isOwner(userId)
@@ -95,6 +137,24 @@ service cloud.firestore {
           && request.resource.data.walletId is string
           && request.resource.data.repayments is list;
         allow delete: if isOwner(userId);
+      }
+
+      // Budgets collection
+      match /budgets/{budgetId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidBudget(request.resource.data);
+      }
+
+      // Recurring transactions collection
+      match /recurring/{recurringId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidRecurring(request.resource.data);
+      }
+
+      // Savings goals collection
+      match /savingsGoals/{goalId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidSavingsGoal(request.resource.data);
       }
     }
   }

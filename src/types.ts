@@ -55,7 +55,7 @@ export const WALLET_TYPE_LABELS: Record<WalletType, string> = {
 
 export function getWalletLabel(type: string, fallbackName?: string): string {
   if (fallbackName && fallbackName.trim()) {
-    return fallbackName;
+    return fallbackName.replace(/လက်ထဲရှိငွေ/g, 'ငွေသား');
   }
   if (type in WALLET_TYPE_LABELS) {
     return WALLET_TYPE_LABELS[type as WalletType];
@@ -139,6 +139,40 @@ export interface Loan {
   status: LoanStatus;
   note?: string;
   repayments: LoanRepayment[];
+  createdAt: string;
+}
+
+export interface Budget {
+  id: string;
+  category: string;
+  monthlyLimit: number;
+  createdAt: string;
+}
+
+export type RecurringFrequency = 'weekly' | 'monthly' | 'yearly';
+
+export interface RecurringTransaction {
+  id: string;
+  type: 'income' | 'expense';
+  title: string;
+  amount: number;
+  category: string;
+  walletId: string;
+  frequency: RecurringFrequency;
+  nextDueDate: string; // 'YYYY-MM-DD'
+  isActive: boolean;
+  note?: string;
+  createdAt: string;
+}
+
+export interface SavingsGoal {
+  id: string;
+  title: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate?: string; // 'YYYY-MM-DD'
+  walletId?: string;
+  note?: string;
   createdAt: string;
 }
 

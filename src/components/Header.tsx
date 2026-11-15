@@ -1,15 +1,15 @@
-import { Menu, WifiOff, RefreshCw, Sun, Moon, Languages } from 'lucide-react';
+import { WifiOff, RefreshCw, Sun, Moon, Languages } from 'lucide-react';
 import { UserProfile } from '../types';
 import type { ResolvedTheme } from '../hooks/useTheme';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { CURRENCY_LIST, type CurrencyCode } from '../utils/currency';
+import { getRouteTitle, type RouteId } from '../routes/routeConfig';
 import CustomSelect from './CustomSelect';
 
 interface HeaderProps {
-  currentTab: string;
+  currentRoute: RouteId;
   profile: UserProfile | null;
-  onOpenMobileSidebar: () => void;
   totalIncomeForMonth?: number;
   totalExpenseForMonth?: number;
   isInstallable?: boolean;
@@ -22,9 +22,8 @@ interface HeaderProps {
 }
 
 export default function Header({
-  currentTab,
+  currentRoute,
   profile: _profile,
-  onOpenMobileSidebar,
   isOnline = true,
   isUpdateAvailable = false,
   onUpdateApp,
@@ -34,46 +33,20 @@ export default function Header({
   const { language, toggleLanguage, t } = useLanguage();
   const { displayCurrency, setDisplayCurrency } = useCurrency();
 
-  const getPageTitle = () => {
-    switch (currentTab) {
-      case 'dashboard':
-        return t.nav.dashboard;
-      case 'incomes':
-        return t.nav.incomes;
-      case 'expenses':
-        return t.nav.expenses;
-      case 'loans':
-        return t.nav.loans;
-      case 'wallets':
-        return t.nav.wallets;
-      case 'categories':
-        return t.nav.categories;
-      case 'transactions':
-        return t.nav.transactions;
-      case 'profile':
-        return t.nav.profile;
-      default:
-        return 'SmartWallet';
-    }
-  };
-
   return (
     <header
       id="app-header"
       className="sticky top-0 z-30 flex h-14 sm:h-16 w-full items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 sm:px-6 md:px-8 transition-colors duration-200"
     >
-      {/* Mobile Menu & Page Title */}
+      {/* Mobile Logo & Page Title */}
       <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-        <button
-          id="btn-toggle-mobile-sidebar"
-          onClick={onOpenMobileSidebar}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden focus:outline-none flex-shrink-0 cursor-pointer"
-          aria-label="Open menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        <img
+          src="/logo.png"
+          alt="SmartWallet"
+          className="h-8 w-8 rounded-xl object-contain border border-blue-100/60 dark:border-slate-700 lg:hidden flex-shrink-0"
+        />
         <h1 id="header-page-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate">
-          {getPageTitle()}
+          {getRouteTitle(currentRoute, t)}
         </h1>
       </div>
 
