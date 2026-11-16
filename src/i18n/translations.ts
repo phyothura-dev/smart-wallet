@@ -177,6 +177,26 @@ export interface Translations {
     viewLoans: string;
     incomeLabel: string;
     expenseLabel: string;
+    budgetsOverview: string;
+    noBudgets: string;
+    budgetExceededLabel: string;
+    budgetWarningLabel: string;
+    upcomingRecurring: string;
+    noRecurring: string;
+    recordNow: string;
+    savingsGoalsOverview: string;
+    noGoals: string;
+    aiInsightsTitle: string;
+    aiInsightsSubtitle: string;
+    aiGenerate: string;
+    aiRefresh: string;
+    aiHealthScore: string;
+    aiWarnings: string;
+    aiTips: string;
+    aiEmptyPrompt: string;
+    quickAddPlaceholder: string;
+    quickAddBtn: string;
+    quickAddSuccess: string;
   };
   records: {
     addIncome: string;
@@ -563,6 +583,26 @@ export const translations: Record<Language, Translations> = {
       viewLoans: 'အသေးစိတ်ကြည့်ရန်',
       incomeLabel: 'ဝင်ငွေ',
       expenseLabel: 'ထွက်ငွေ',
+      budgetsOverview: 'လစဉ် ဘတ်ဂျက် အခြေအနေ',
+      noBudgets: 'ဘတ်ဂျက် မသတ်မှတ်ရသေးပါ',
+      budgetExceededLabel: 'ကျော်လွန်',
+      budgetWarningLabel: 'သတိပေးချက်',
+      upcomingRecurring: 'ပေးချေရန် ပုံမှန်စာရင်းများ',
+      noRecurring: 'ပုံမှန်စာရင်း မရှိသေးပါ',
+      recordNow: 'ယခုမှတ်မည်',
+      savingsGoalsOverview: 'စုငွေ ရည်မှန်းချက်များ',
+      noGoals: 'စုငွေရည်မှန်းချက် မရှိသေးပါ',
+      aiInsightsTitle: 'AI ငွေကြေး သုံးသပ်ချက်',
+      aiInsightsSubtitle: 'ယခုလ ဝင်ငွေ/ထွက်ငွေနှင့် ဘတ်ဂျက်များအပေါ် အခြေခံ၍ အကြံပြုချက်',
+      aiGenerate: 'AI ဖြင့် သုံးသပ်မည်',
+      aiRefresh: 'အသစ်ပြန်စစ်မည်',
+      aiHealthScore: 'ငွေကြေးကျန်းမာမှု ရမှတ်',
+      aiWarnings: 'သတိပြုရန် အချက်များ',
+      aiTips: 'အကြံပြုချက်များ',
+      aiEmptyPrompt: 'သင့်လစဉ် အသုံးစရိတ်များကို AI ဖြင့် ခွဲခြမ်းစိတ်ဖြာကြည့်ပါ။',
+      quickAddPlaceholder: 'အမြန်ထည့်ရန်: ဥပမာ "ကော်ဖီ ၃၅၀၀ kpay" သို့မဟုတ် "+50000 Bonus"',
+      quickAddBtn: 'အမြန်ထည့်',
+      quickAddSuccess: 'မှတ်တမ်းတင်ပြီးပါပြီ',
     },
     records: {
       addIncome: 'ဝင်ငွေအသစ် ထည့်မည်',
@@ -947,6 +987,26 @@ export const translations: Record<Language, Translations> = {
       viewLoans: 'View Details',
       incomeLabel: 'Income',
       expenseLabel: 'Expense',
+      budgetsOverview: 'Monthly Budgets',
+      noBudgets: 'No budgets set yet',
+      budgetExceededLabel: 'Over',
+      budgetWarningLabel: 'Near limit',
+      upcomingRecurring: 'Upcoming Recurring',
+      noRecurring: 'No active recurring items',
+      recordNow: 'Record',
+      savingsGoalsOverview: 'Savings Goals',
+      noGoals: 'No savings goals yet',
+      aiInsightsTitle: 'AI Financial Insights',
+      aiInsightsSubtitle: 'Smart analysis based on your monthly cashflow & budgets',
+      aiGenerate: 'Analyze with AI',
+      aiRefresh: 'Refresh',
+      aiHealthScore: 'Health Score',
+      aiWarnings: 'Warnings',
+      aiTips: 'Actionable Tips',
+      aiEmptyPrompt: 'Analyze your monthly spending, budgets, and goals with Gemini AI.',
+      quickAddPlaceholder: 'Quick add: e.g. "Coffee 3500 kpay" or "+50000 Bonus"',
+      quickAddBtn: 'Quick Add',
+      quickAddSuccess: 'Recorded',
     },
     records: {
       addIncome: 'Add Income',

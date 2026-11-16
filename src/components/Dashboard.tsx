@@ -27,10 +27,13 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { Income, Expense, UserProfile, Transaction, Wallet, Transfer, Loan, getWalletLabel } from '../types';
+import { Income, Expense, UserProfile, Transaction, Wallet, Transfer, Loan, Budget, RecurringTransaction, SavingsGoal, getWalletLabel } from '../types';
 import { getWalletIcon } from './WalletManager';
 import { calculateWalletBalances } from '../utils/finance';
 import TransferModal from './TransferModal';
+import DashboardPlanningWidgets from './DashboardPlanningWidgets';
+import AIInsightsCard from './AIInsightsCard';
+import SmartQuickAddBar from './SmartQuickAddBar';
 import type { ResolvedTheme } from '../hooks/useTheme';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -42,10 +45,16 @@ interface DashboardProps {
   wallets?: Wallet[];
   transfers?: Transfer[];
   loans?: Loan[];
+  budgets?: Budget[];
+  recurring?: RecurringTransaction[];
+  savingsGoals?: SavingsGoal[];
   profile: UserProfile | null;
   resolvedTheme?: ResolvedTheme;
   onChangeTab: (tab: string) => void;
+  onAddIncome?: (data: Omit<Income, 'id' | 'createdAt'>) => Promise<void>;
+  onAddExpense?: (data: Omit<Expense, 'id' | 'createdAt'>) => Promise<void>;
   onAddTransfer?: (data: Omit<Transfer, 'id' | 'createdAt'>) => Promise<void>;
+  onRecordRecurringNow?: (item: RecurringTransaction) => Promise<void>;
   onShowToast?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
@@ -55,10 +64,16 @@ export default function Dashboard({
   wallets = [],
   transfers = [],
   loans = [],
+  budgets = [],
+  recurring = [],
+  savingsGoals = [],
   profile: _profile,
   resolvedTheme = 'light',
   onChangeTab,
+  onAddIncome,
+  onAddExpense,
   onAddTransfer,
+  onRecordRecurringNow,
   onShowToast
 }: DashboardProps) {
   const { language, t } = useLanguage();
@@ -242,6 +257,13 @@ export default function Dashboard({
 
   return (
     <div className="space-y-5 sm:space-y-6">
+      {/* Smart Natural-Language Quick Add */}
+      <SmartQuickAddBar
+        onAddIncome={onAddIncome}
+        onAddExpense={onAddExpense}
+        onShowToast={onShowToast}
+      />
+
       {/* 1. Time-Frame Filter Toolbar (Streamlined) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
@@ -517,6 +539,20 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      {/* Planning Overview: Budgets, Upcoming Recurring & Savings Goals */}
+      <DashboardPlanningWidgets
+        budgets={budgets}
+        expenses={expenses}
+        recurring={recurring}
+        savingsGoals={savingsGoals}
+        onChangeTab={onChangeTab}
+        onRecordRecurringNow={onRecordRecurringNow}
+        onShowToast={onShowToast}
+      />
+
+      {/* AI Financial Insights */}
+      <AIInsightsCard onShowToast={onShowToast} />
 
       {/* Recent Transactions */}
       <div id="card-recent-transactions" className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-2xs">

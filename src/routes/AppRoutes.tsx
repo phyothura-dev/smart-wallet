@@ -104,10 +104,16 @@ export default function AppRoutes(props: AppRoutesProps) {
           wallets={props.wallets}
           transfers={props.transfers}
           loans={props.loans}
+          budgets={props.budgets}
+          recurring={props.recurring}
+          savingsGoals={props.savingsGoals}
           profile={props.profile}
           resolvedTheme={props.resolvedTheme}
           onChangeTab={(tab) => onNavigate(tab as RouteId)}
+          onAddIncome={props.onAddIncome}
+          onAddExpense={props.onAddExpense}
           onAddTransfer={props.onAddTransfer}
+          onRecordRecurringNow={props.onRecordRecurringNow}
           onShowToast={onShowToast}
         />
       )}

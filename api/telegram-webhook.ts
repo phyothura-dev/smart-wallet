@@ -31,6 +31,8 @@ const HELP_TEXT = [
   '• <code>/link CODE</code> — SmartWallet account ချိတ်ဆက်ရန်',
   '• <code>/balance</code> — Wallet လက်ကျန်ငွေများ ကြည့်ရန်',
   '• <code>/summary</code> — ဒီလ ဝင်ငွေ/အသုံးစရိတ် အနှစ်ချုပ်',
+  '• <code>/budgets</code> — ဒီလ ဘတ်ဂျက် အခြေအနေ ကြည့်ရန်',
+  '• <code>/goals</code> — စုငွေရည်မှန်းချက်များ ကြည့်ရန်',
   '• <code>/expense 5000 Coffee</code> — အသုံးစရိတ် ထည့်ရန်',
   '• <code>/income 300000 Salary</code> — ဝင်ငွေ ထည့်ရန်',
   '• <code>/unlink</code> — Account ချိတ်ဆက်မှု ဖြုတ်ရန်',
@@ -207,6 +209,75 @@ async function handleSummary(chatId: number, uid: string): Promise<void> {
   await sendTelegramMessage(chatId, text);
 }
 
+async function handleBudgets(chatId: number, uid: string): Promise<void> {
+  const db = getAdminDb();
+  const userRef = db.collection('users').doc(uid);
+  const currentMonth = getYangonDateString().slice(0, 7);
+
+  const [userSnap, budgetsSnap, expensesSnap] = await Promise.all([
+    userRef.get(),
+    userRef.collection('budgets').get(),
+    userRef.collection('expenses').where('date', '>=', `${currentMonth}-01`).get(),
+  ]);
+
+  if (budgetsSnap.empty) {
+    await sendTelegramMessage(chatId, '📊 ဘတ်ဂျက် မသတ်မှတ်ရသေးပါ။ SmartWallet App ထဲတွင် ထည့်သွင်းနိုင်ပါသည်။');
+    return;
+  }
+
+  const currency = (userSnap.data()?.currency as string) || 'MMK';
+  const spentByCategory = new Map<string, number>();
+
+  expensesSnap.forEach((doc) => {
+    const d = doc.data();
+    if (typeof d.date === 'string' && d.date.startsWith(currentMonth) && typeof d.category === 'string') {
+      spentByCategory.set(d.category, (spentByCategory.get(d.category) || 0) + (Number(d.amount) || 0));
+    }
+  });
+
+  const lines: string[] = [`<b>📊 ${currentMonth} ဘတ်ဂျက် အခြေအနေ</b>`, ''];
+  budgetsSnap.forEach((doc) => {
+    const b = doc.data();
+    const category = String(b.category || '');
+    const limit = Number(b.monthlyLimit) || 0;
+    const spent = spentByCategory.get(category) || 0;
+    const pct = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+    const icon = pct >= 100 ? '🔴' : pct >= 80 ? '🟠' : '🟢';
+    lines.push(`${icon} <b>${category}:</b> ${formatMoney(spent, currency)} / ${formatMoney(limit, currency)} (${pct}%)`);
+  });
+
+  await sendTelegramMessage(chatId, lines.join('\n'));
+}
+
+async function handleGoals(chatId: number, uid: string): Promise<void> {
+  const db = getAdminDb();
+  const userRef = db.collection('users').doc(uid);
+  const [userSnap, goalsSnap] = await Promise.all([
+    userRef.get(),
+    userRef.collection('savingsGoals').get(),
+  ]);
+
+  if (goalsSnap.empty) {
+    await sendTelegramMessage(chatId, '🎯 စုငွေရည်မှန်းချက် မရှိသေးပါ။ SmartWallet App ထဲတွင် ထည့်သွင်းနိုင်ပါသည်။');
+    return;
+  }
+
+  const currency = (userSnap.data()?.currency as string) || 'MMK';
+  const lines: string[] = ['<b>🎯 စုငွေ ရည်မှန်းချက်များ</b>', ''];
+
+  goalsSnap.forEach((doc) => {
+    const g = doc.data();
+    const current = Number(g.currentAmount) || 0;
+    const target = Number(g.targetAmount) || 0;
+    const pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
+    const icon = current >= target ? '✅' : '🎯';
+    const dueText = g.targetDate ? ` · ${g.targetDate}` : '';
+    lines.push(`${icon} <b>${g.title}:</b> ${formatMoney(current, currency)} / ${formatMoney(target, currency)} (${pct}%)${dueText}`);
+  });
+
+  await sendTelegramMessage(chatId, lines.join('\n'));
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -288,6 +359,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ ok: true });
     }
 
+    if (text === '/budgets') {
+      await handleBudgets(chatId, uid);
+      return res.status(200).json({ ok: true });
+    }
+
+    if (text === '/goals') {
+      await handleGoals(chatId, uid);
+      return res.status(200).json({ ok: true });
+    }
+
     // Parse transaction (/expense, /income, -5000 Coffee, or natural language)
     const db = getAdminDb();
     const userRef = db.collection('users').doc(uid);
@@ -326,10 +407,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       createdAt: new Date().toISOString(),
     });
 
+    let budgetAlert = '';
+    if (parsed.type === 'expense') {
+      const currentMonth = dateStr.slice(0, 7);
+      const budgetSnap = await userRef
+        .collection('budgets')
+        .where('category', '==', parsed.category)
+        .limit(1)
+        .get();
+
+      if (!budgetSnap.empty) {
+        const limit = Number(budgetSnap.docs[0].data().monthlyLimit) || 0;
+        if (limit > 0) {
+          const monthExpSnap = await userRef
+            .collection('expenses')
+            .where('date', '>=', `${currentMonth}-01`)
+            .get();
+          let spent = 0;
+          monthExpSnap.forEach((doc) => {
+            const d = doc.data();
+            if (d.category === parsed.category && typeof d.date === 'string' && d.date.startsWith(currentMonth)) {
+              spent += Number(d.amount) || 0;
+            }
+          });
+          const pct = Math.round((spent / limit) * 100);
+          if (pct >= 100) {
+            budgetAlert = `\n\n🚨 <b>Budget ကျော်လွန်နေပါပြီ!</b> (${parsed.category}: ${formatMoney(spent, currency)} / ${formatMoney(limit, currency)} - ${pct}%)`;
+          } else if (pct >= 80) {
+            budgetAlert = `\n\n⚠️ <b>Budget သတိပေးချက်:</b> ${parsed.category} သည် ${pct}% (${formatMoney(spent, currency)} / ${formatMoney(limit, currency)}) သုံးစွဲပြီးပါပြီ။`;
+          }
+        }
+      }
+    }
+
     const icon = parsed.type === 'income' ? '🟢 ဝင်ငွေ' : '🔴 အသုံးစရိတ်';
     await sendTelegramMessage(
       chatId,
-      `${icon} မှတ်တမ်းတင်ပြီးပါပြီ!\n• <b>ခေါင်းစဉ်:</b> ${parsed.title}\n• <b>ပမာဏ:</b> ${formatMoney(parsed.amount, currency)}\n• <b>Category:</b> ${parsed.category}\n• <b>ရက်စွဲ:</b> ${dateStr}`
+      `${icon} မှတ်တမ်းတင်ပြီးပါပြီ!\n• <b>ခေါင်းစဉ်:</b> ${parsed.title}\n• <b>ပမာဏ:</b> ${formatMoney(parsed.amount, currency)}\n• <b>Category:</b> ${parsed.category}\n• <b>ရက်စွဲ:</b> ${dateStr}${budgetAlert}`
     );
 
     return res.status(200).json({ ok: true });

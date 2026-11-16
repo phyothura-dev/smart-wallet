@@ -21,6 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const db = getAdminDb();
     const today = getYangonDateString();
+    const currentMonth = today.slice(0, 7);
     const soonThreshold = addDays(today, 3);
     const linkedUsers = await db.collection('telegramUsers').get();
 
@@ -32,13 +33,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!uid) continue;
 
       const userRef = db.collection('users').doc(uid);
-      const [userSnap, loansSnap] = await Promise.all([
+      const [userSnap, loansSnap, recurringSnap, budgetsSnap, monthExpensesSnap] = await Promise.all([
         userRef.get(),
         userRef.collection('loans').get(),
+        userRef.collection('recurring').get(),
+        userRef.collection('budgets').get(),
+        userRef.collection('expenses').where('date', '>=', `${currentMonth}-01`).get(),
       ]);
 
       const currency = (userSnap.data()?.currency as string) || 'MMK';
       const dueLoans: string[] = [];
+      const dueRecurring: string[] = [];
+      const overBudgets: string[] = [];
 
       loansSnap.forEach((loanDoc) => {
         const loan = loanDoc.data();
@@ -53,10 +59,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       });
 
+      recurringSnap.forEach((recDoc) => {
+        const rec = recDoc.data();
+        if (!rec.isActive || !rec.nextDueDate) return;
+        if (rec.nextDueDate <= soonThreshold) {
+          const typeLabel = rec.type === 'income' ? 'ဝင်ငွေ' : 'ထွက်ငွေ';
+          const statusTag = rec.nextDueDate < today ? '⚠️ ရက်ကျော်' : '⏰ နီးကပ်';
+          dueRecurring.push(
+            `• ${statusTag} [${typeLabel}] <b>${rec.title}</b> — ${formatMoney(Number(rec.amount) || 0, currency)} (Due: ${rec.nextDueDate})`
+          );
+        }
+      });
+
+      if (!budgetsSnap.empty) {
+        const spentByCategory = new Map<string, number>();
+        monthExpensesSnap.forEach((expDoc) => {
+          const exp = expDoc.data();
+          if (typeof exp.date === 'string' && exp.date.startsWith(currentMonth) && typeof exp.category === 'string') {
+            spentByCategory.set(exp.category, (spentByCategory.get(exp.category) || 0) + (Number(exp.amount) || 0));
+          }
+        });
+
+        budgetsSnap.forEach((bDoc) => {
+          const b = bDoc.data();
+          const category = String(b.category || '');
+          const limit = Number(b.monthlyLimit) || 0;
+          const spent = spentByCategory.get(category) || 0;
+          if (limit > 0 && spent >= limit) {
+            const pct = Math.round((spent / limit) * 100);
+            overBudgets.push(
+              `• 🚨 <b>${category}</b> — ${formatMoney(spent, currency)} / ${formatMoney(limit, currency)} (${pct}%)`
+            );
+          }
+        });
+      }
+
+      const sections: string[] = [];
       if (dueLoans.length > 0) {
+        sections.push(`<b>💳 ချေးငွေ သတိပေးချက်</b>\n${dueLoans.join('\n')}`);
+      }
+      if (dueRecurring.length > 0) {
+        sections.push(`<b>🔁 ပုံမှန်စာရင်း သတိပေးချက်</b>\n${dueRecurring.join('\n')}`);
+      }
+      if (overBudgets.length > 0) {
+        sections.push(`<b>📊 ဘတ်ဂျက် ကျော်လွန်မှု</b>\n${overBudgets.join('\n')}`);
+      }
+
+      if (sections.length > 0) {
         await sendTelegramMessage(
           chatId,
-          `<b>🔔 SmartWallet ချေးငွေ သတိပေးချက်</b>\n\n${dueLoans.join('\n')}`
+          `<b>🔔 SmartWallet နေ့စဉ်သတိပေးချက်</b>\n\n${sections.join('\n\n')}`
         );
         sentCount += 1;
       }
